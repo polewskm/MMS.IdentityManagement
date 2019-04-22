@@ -1,21 +1,28 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace MMS.IdentityManagement
 {
     public interface ITokenConverter
     {
-        MemberIdentity IdentityFromIdToken(string idToken);
+        ClaimsIdentity IdentityFromToken(string token, string authenticationType);
     }
 
     public class TokenConverter : ITokenConverter
     {
-        public MemberIdentity IdentityFromIdToken(string idToken)
+        public virtual ClaimsIdentity IdentityFromToken(string token, string authenticationType)
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(idToken);
+            if (string.IsNullOrEmpty(token))
+                throw new ArgumentNullException(nameof(token));
+            if (string.IsNullOrEmpty(authenticationType))
+                throw new ArgumentNullException(nameof(authenticationType));
 
-            return new MemberIdentity(jwtToken.Claims, "authType");
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var identity = new ClaimsIdentity(jwtToken.Claims, authenticationType);
+
+            return identity;
         }
 
     }

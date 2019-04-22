@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 
 namespace MMS.IdentityManagement
 {
@@ -13,10 +14,12 @@ namespace MMS.IdentityManagement
 
         public string AccessTokenType { get; set; }
 
+        public DateTimeOffset AccessTokenExpiration { get; set; }
+
         public string RefreshToken { get; set; }
 
-        public DateTimeOffset ExpiresWhen { get; set; }
+        public DateTimeOffset RefreshTokenExpiration { get; set; }
 
-        public MemberIdentity Identity { get; set; }
+        public ClaimsIdentity Identity { get; set; }
     }
 }

@@ -14,6 +14,7 @@ namespace MMS.IdentityManagement
         public const string Expiration = ClaimTypes.Expiration;
         public const string Role = ClaimTypes.Role;
 
+        public const string BoardMember = LocalNamespace + "/boardmember";
         public const string Champion = LocalNamespace + "/champion";
     }
 }

@@ -2,6 +2,6 @@
 {
     public static class MemberRoles
     {
-        public const string BoardMember = "BoardMember";
+        public const string SystemAdministrator = "SystemAdministrator";
     }
 }
