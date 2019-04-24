@@ -1,10 +1,13 @@
-﻿namespace MMS.IdentityManagement
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MMS.IdentityManagement
 {
     // POST /api/v1/tokens/keycode
     // POST /api/v1/tokens/refresh
 
     public abstract class AuthenticationRequest
     {
+        [Required]
         public string ClientId { get; set; }
     }
 }

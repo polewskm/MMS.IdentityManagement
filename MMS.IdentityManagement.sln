@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMS.IdentityManagement", "MMS.IdentityManagement\MMS.IdentityManagement.csproj", "{698A004C-8C86-4B4F-9391-F4DF756BBE32}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MMS.IdentityManagement", "MMS.IdentityManagement\MMS.IdentityManagement.csproj", "{698A004C-8C86-4B4F-9391-F4DF756BBE32}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5DE7EAFB-49E9-4167-AE8F-9801F7B9429D}"
 	ProjectSection(SolutionItems) = preProject
@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMS.IdentityManagement.Api", "MMS.IdentityManagement.Api\MMS.IdentityManagement.Api.csproj", "{493C015E-2DFA-4443-82D6-9BD066DFAA9C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,6 +24,10 @@ Global
 		{698A004C-8C86-4B4F-9391-F4DF756BBE32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{698A004C-8C86-4B4F-9391-F4DF756BBE32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{698A004C-8C86-4B4F-9391-F4DF756BBE32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{493C015E-2DFA-4443-82D6-9BD066DFAA9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{493C015E-2DFA-4443-82D6-9BD066DFAA9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{493C015E-2DFA-4443-82D6-9BD066DFAA9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{493C015E-2DFA-4443-82D6-9BD066DFAA9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
