@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MMS.IdentityManagement.Api.Controllers
@@ -12,12 +13,26 @@ namespace MMS.IdentityManagement.Api.Controllers
     {
         [HttpPost]
         [Route("keycode")]
-        public IActionResult KeyCodeAuth([FromBody, Required] KeyCodeAuthenticationRequest request)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthenticationResult))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+        public IActionResult KeyCode([FromBody, Required] KeyCodeAuthenticationRequest request)
         {
             if (request == null)
                 return BadRequest();
 
-            return Ok();
+            return StatusCode(StatusCodes.Status501NotImplemented);
+        }
+
+        [HttpPost]
+        [Route("refresh")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthenticationResult))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+        public IActionResult Refresh([FromBody, Required] TokenRefreshRequest request)
+        {
+            if (request == null)
+                return BadRequest();
+
+            return StatusCode(StatusCodes.Status501NotImplemented);
         }
 
     }
