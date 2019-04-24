@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +21,31 @@ namespace MMS.IdentityManagement.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.InvalidModelStateResponseFactory = context =>
+                    {
+                        var problemDetails = new ValidationProblemDetails(context.ModelState)
+                        {
+                            Status = StatusCodes.Status400BadRequest,
+                        };
+
+                        problemDetails.Extensions["timestamp"] = DateTimeOffset.Now;
+
+                        var traceId = Activity.Current?.Id ?? context.HttpContext.TraceIdentifier;
+                        problemDetails.Extensions["traceId"] = traceId;
+
+                        var result = new BadRequestObjectResult(problemDetails);
+
+                        result.ContentTypes.Add("application/problem+json");
+                        result.ContentTypes.Add("application/problem+xml");
+
+                        return result;
+                    };
+                });
+
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new Info
