@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,8 @@ namespace MMS.IdentityManagement.Api.Controllers
         {
             if (request == null)
                 return BadRequest();
+
+            throw new NotImplementedException();
 
             return StatusCode(StatusCodes.Status501NotImplemented);
         }
