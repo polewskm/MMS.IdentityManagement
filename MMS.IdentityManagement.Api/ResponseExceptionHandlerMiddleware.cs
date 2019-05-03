@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 
 namespace MMS.IdentityManagement.Api
@@ -68,27 +72,53 @@ namespace MMS.IdentityManagement.Api
             }
         }
 
-        private async Task<bool> HandleExceptionAsync(HttpContext context, Exception exception, int status, string message)
+        private async Task<bool> HandleExceptionAsync(HttpContext context, Exception exception, int status, string problemTitle)
         {
             // We can't do anything if the response has already started, just abort.
             if (context.Response.HasStarted)
                 return false;
 
             context.Response.StatusCode = status;
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
 
-            //var response = ResponseCreator.Factory.Error(code, message, exception);
             var response = new ProblemDetails
             {
                 Status = status,
-                Title = message,
-                Detail = exception.ToString(),                
+                Title = problemTitle,
+                Extensions = { ["Exception"] = exception },
             };
             var json = JsonConvert.SerializeObject(response, _settings);
 
             await context.Response.WriteAsync(json, context.RequestAborted).ConfigureAwait(false);
 
             return true;
+        }
+
+    }
+
+    public class ProblemDetailsExceptionFilter : IExceptionFilter
+    {
+        public void OnException(ExceptionContext context)
+        {
+            if (context.Exception is NotImplementedException)
+            {
+                const int statusCode = StatusCodes.Status501NotImplemented;
+                var problemDetails = new ProblemDetails
+                {
+                    Status = statusCode,
+                    Title = ReasonPhrases.GetReasonPhrase(statusCode),
+                };
+
+                context.Result = new ObjectResult(problemDetails)
+                {
+                    StatusCode = statusCode,
+                    ContentTypes =
+                    {
+                        "application/problem+json",
+                        "application/problem+xml",
+                    },
+                };
+            }
         }
 
     }

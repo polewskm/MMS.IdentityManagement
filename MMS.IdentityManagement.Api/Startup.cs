@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace MMS.IdentityManagement.Api
@@ -23,9 +22,21 @@ namespace MMS.IdentityManagement.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc()
+                //.AddMvcOptions(options => { options.Filters.Add<ProblemDetailsExceptionFilter>(); })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .ConfigureApiBehaviorOptions(options =>
                 {
+                    //options.ClientErrorMapping[200] = new ClientErrorData
+                    //{
+                    //    Title = "",
+                    //    Link = "",
+                    //};
+                    options.ClientErrorMapping[StatusCodes.Status501NotImplemented] = new ClientErrorData
+                    {
+                        //Title = Http,
+                        Link = "",
+                    };
+
                     options.InvalidModelStateResponseFactory = context =>
                     {
                         var problemDetails = new ValidationProblemDetails(context.ModelState)
@@ -46,6 +57,8 @@ namespace MMS.IdentityManagement.Api
                         return result;
                     };
                 });
+
+            services.AddScoped<ProblemDetailsExceptionFilter>();
 
             services.AddSwaggerGen(options =>
             {
@@ -70,8 +83,7 @@ namespace MMS.IdentityManagement.Api
                 app.UseHsts();
             }
 
-            //JsonSerializerSettings settings = null;
-            app.UseMiddleware<ResponseExceptionHandlerMiddleware>();
+            //app.UseMiddleware<ResponseExceptionHandlerMiddleware>();
 
             app.UseHttpsRedirection();
             app.UseMvc();

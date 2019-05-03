@@ -23,7 +23,8 @@ namespace MMS.IdentityManagement.Api.Controllers
 
             throw new NotImplementedException();
 
-            return StatusCode(StatusCodes.Status501NotImplemented);
+            //return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            //return StatusCode(StatusCodes.Status200OK);
         }
 
         [HttpPost]
