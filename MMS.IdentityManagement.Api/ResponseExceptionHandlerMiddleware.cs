@@ -103,10 +103,12 @@ namespace MMS.IdentityManagement.Api
             if (context.Exception is NotImplementedException)
             {
                 const int statusCode = StatusCodes.Status501NotImplemented;
+
                 var problemDetails = new ProblemDetails
                 {
                     Status = statusCode,
                     Title = ReasonPhrases.GetReasonPhrase(statusCode),
+                    Extensions = { ["Exception"] = context.Exception },
                 };
 
                 context.Result = new ObjectResult(problemDetails)
