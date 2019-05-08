@@ -21,9 +21,9 @@ namespace MMS.IdentityManagement.Api.Controllers
             if (request == null)
                 return BadRequest();
 
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
 
-            //return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return StatusCode(StatusCodes.Status501NotImplemented);
             //return StatusCode(StatusCodes.Status200OK);
         }
 

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace MMS.IdentityManagement.Api
@@ -21,44 +20,22 @@ namespace MMS.IdentityManagement.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.TryAddSingleton<IProblemDetailsFactory, ProblemDetailsFactory>();
+            services.TryAddSingleton<IClientErrorFactory, ClientErrorFactory>();
+
             services.AddMvc()
                 //.AddMvcOptions(options => { options.Filters.Add<ProblemDetailsExceptionFilter>(); })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .ConfigureApiBehaviorOptions(options =>
                 {
-                    //options.ClientErrorMapping[200] = new ClientErrorData
-                    //{
-                    //    Title = "",
-                    //    Link = "",
-                    //};
-                    options.ClientErrorMapping[StatusCodes.Status501NotImplemented] = new ClientErrorData
-                    {
-                        //Title = Http,
-                        Link = "",
-                    };
-
                     options.InvalidModelStateResponseFactory = context =>
                     {
-                        var problemDetails = new ValidationProblemDetails(context.ModelState)
-                        {
-                            Status = StatusCodes.Status400BadRequest,
-                        };
-
-                        problemDetails.Extensions["timestamp"] = DateTimeOffset.Now;
-
-                        var traceId = Activity.Current?.Id ?? context.HttpContext.TraceIdentifier;
-                        problemDetails.Extensions["traceId"] = traceId;
-
-                        var result = new BadRequestObjectResult(problemDetails);
-
-                        result.ContentTypes.Add("application/problem+json");
-                        result.ContentTypes.Add("application/problem+xml");
-
+                        var serviceProvider = context.HttpContext.RequestServices;
+                        var clientErrorFactory = serviceProvider.GetRequiredService<IClientErrorFactory>();
+                        var result = clientErrorFactory.GetClientError(context, null);
                         return result;
                     };
                 });
-
-            services.AddScoped<ProblemDetailsExceptionFilter>();
 
             services.AddSwaggerGen(options =>
             {
@@ -83,7 +60,7 @@ namespace MMS.IdentityManagement.Api
                 app.UseHsts();
             }
 
-            //app.UseMiddleware<ResponseExceptionHandlerMiddleware>();
+            app.UseMiddleware<ProblemDetailsExceptionMiddleware>();
 
             app.UseHttpsRedirection();
             app.UseMvc();
