@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-namespace MMS.IdentityManagement.Api
+namespace MMS.IdentityManagement.Api.Services
 {
     public class ClientErrorFactory : IClientErrorFactory
     {

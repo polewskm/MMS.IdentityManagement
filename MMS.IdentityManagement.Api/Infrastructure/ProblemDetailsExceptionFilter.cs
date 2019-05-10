@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
+using MMS.IdentityManagement.Api.Services;
 
 namespace MMS.IdentityManagement.Api
 {

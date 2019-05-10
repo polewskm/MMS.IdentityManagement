@@ -1,7 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MMS.IdentityManagement.Api.Services;
 
 namespace MMS.IdentityManagement.Api.Controllers
 {
@@ -12,26 +15,32 @@ namespace MMS.IdentityManagement.Api.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
+        private readonly ITokenService _tokenService;
+
+        public TokenController(ITokenService tokenService)
+        {
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+        }
+
         [HttpPost]
         [Route("keycode")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthenticationResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-        public IActionResult KeyCode([FromBody, Required] KeyCodeAuthenticationRequest request)
+        public virtual async Task<IActionResult> KeyCode([FromBody, Required] KeyCodeAuthenticationRequest request, CancellationToken cancellationToken = default)
         {
             if (request == null)
                 return BadRequest();
 
-            //throw new NotImplementedException();
+            var result = await _tokenService.AuthenticateKeyCodeAsync(request, cancellationToken).ConfigureAwait(false);
 
-            return StatusCode(StatusCodes.Status501NotImplemented);
-            //return StatusCode(StatusCodes.Status200OK);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthenticationResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-        public IActionResult Refresh([FromBody, Required] TokenRefreshRequest request)
+        public virtual IActionResult Refresh([FromBody, Required] TokenRefreshRequest request)
         {
             if (request == null)
                 return BadRequest();

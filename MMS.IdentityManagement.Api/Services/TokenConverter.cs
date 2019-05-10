@@ -2,7 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace MMS.IdentityManagement
+namespace MMS.IdentityManagement.Api.Services
 {
     public interface ITokenConverter
     {

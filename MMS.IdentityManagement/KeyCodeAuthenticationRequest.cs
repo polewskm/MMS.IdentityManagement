@@ -2,7 +2,7 @@
 
 namespace MMS.IdentityManagement
 {
-    public class KeyCodeAuthenticationRequest : AuthenticationRequest
+    public class KeyCodeAuthenticationRequest : ClientRequest
     {
         [Required]
         public string KeyCode { get; set; }

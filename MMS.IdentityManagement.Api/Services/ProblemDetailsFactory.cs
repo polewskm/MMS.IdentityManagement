@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace MMS.IdentityManagement.Api
+namespace MMS.IdentityManagement.Api.Services
 {
     public interface IProblemDetailsFactory
     {
@@ -16,43 +16,20 @@ namespace MMS.IdentityManagement.Api
         ProblemDetails FromClientError(ActionContext actionContext, IClientErrorActionResult clientError);
     }
 
-    public class ExceptionToStatusCodeMapping
-    {
-        public Type ExceptionType { get; set; }
-        public int StatusCode { get; set; }
-        public string StatusMessage { get; set; }
-    }
-
     public class ProblemDetailsFactory : IProblemDetailsFactory
     {
         // NOTE: order matters
-        private static readonly IReadOnlyList<ExceptionToStatusCodeMapping> Mappings = new[]
-        {
-            new ExceptionToStatusCodeMapping
+        private static readonly IReadOnlyList<(Type ExceptionType, int StatusCode, string StatusMessage)> Mappings
+            = new (Type ExceptionType, int StatusCode, string StatusMessage)[]
             {
-                ExceptionType = typeof(UnauthorizedAccessException),
-                StatusCode = StatusCodes.Status401Unauthorized,
-            },
-            new ExceptionToStatusCodeMapping
-            {
-                ExceptionType = typeof(OperationCanceledException),
-                StatusCode = 499,
-                StatusMessage = "Client Closed Request",
-            },
-            new ExceptionToStatusCodeMapping
-            {
-                ExceptionType = typeof(NotImplementedException),
-                StatusCode = StatusCodes.Status501NotImplemented,
-            },
-            // the following mapping must be last as a catch-all
-            new ExceptionToStatusCodeMapping
-            {
-                ExceptionType = typeof(Exception),
-                StatusCode = StatusCodes.Status500InternalServerError,
-            },
-        };
+                (typeof(UnauthorizedAccessException), StatusCodes.Status401Unauthorized, null),
+                (typeof(OperationCanceledException), 499, "Client Closed Request"),
+                (typeof(NotImplementedException), StatusCodes.Status501NotImplemented, null),
+                // the following mapping must be last as a catch-all
+                (typeof(Exception), StatusCodes.Status500InternalServerError, null),
+            };
 
-        protected void AddCommonExtensions(ProblemDetails problemDetails, HttpContext httpContext)
+        protected void AddCommonDetails(ProblemDetails problemDetails, HttpContext httpContext)
         {
             var machineName = Environment.MachineName;
             var timestamp = DateTimeOffset.Now;
@@ -81,7 +58,7 @@ namespace MMS.IdentityManagement.Api
                 },
             };
 
-            AddCommonExtensions(problemDetails, httpContext);
+            AddCommonDetails(problemDetails, httpContext);
 
             return problemDetails;
         }
@@ -108,7 +85,7 @@ namespace MMS.IdentityManagement.Api
                 };
             }
 
-            AddCommonExtensions(problemDetails, actionContext.HttpContext);
+            AddCommonDetails(problemDetails, actionContext.HttpContext);
 
             return problemDetails;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using MMS.IdentityManagement.Api.Services;
 using Newtonsoft.Json;
 
 namespace MMS.IdentityManagement.Api

@@ -1,10 +1,16 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MMS.IdentityManagement.Api.Infrastructure;
+using MMS.IdentityManagement.Api.Services;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace MMS.IdentityManagement.Api
@@ -13,28 +19,25 @@ namespace MMS.IdentityManagement.Api
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         public IConfiguration Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public virtual void ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton<IProblemDetailsFactory, ProblemDetailsFactory>();
-            services.TryAddSingleton<IClientErrorFactory, ClientErrorFactory>();
+            services.TryAddSingleton<ITokenService, TokenService>();
+            services.TryAddSingleton<ITokenConverter, TokenConverter>();
 
-            services.AddMvc()
-                //.AddMvcOptions(options => { options.Filters.Add<ProblemDetailsExceptionFilter>(); })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                .ConfigureApiBehaviorOptions(options =>
+            services
+                .AddMvc()
+                .AddProblemDetails();
+
+            services
+                .AddAuthentication("KeyCode")
+                .AddScheme<KeyCodeAuthenticationOptions, KeyCodeAuthenticationHandler>("KeyCode", options =>
                 {
-                    options.InvalidModelStateResponseFactory = context =>
-                    {
-                        var serviceProvider = context.HttpContext.RequestServices;
-                        var clientErrorFactory = serviceProvider.GetRequiredService<IClientErrorFactory>();
-                        var result = clientErrorFactory.GetClientError(context, null);
-                        return result;
-                    };
+                    // nothing
                 });
 
             services.AddSwaggerGen(options =>
@@ -48,7 +51,7 @@ namespace MMS.IdentityManagement.Api
             });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -60,8 +63,7 @@ namespace MMS.IdentityManagement.Api
                 app.UseHsts();
             }
 
-            app.UseMiddleware<ProblemDetailsExceptionMiddleware>();
-
+            app.UseProblemDetails();
             app.UseHttpsRedirection();
             app.UseMvc();
 
@@ -70,4 +72,23 @@ namespace MMS.IdentityManagement.Api
         }
 
     }
+
+    public class KeyCodeAuthenticationOptions : AuthenticationSchemeOptions
+    {
+    }
+
+    public class KeyCodeAuthenticationHandler : AuthenticationHandler<KeyCodeAuthenticationOptions>
+    {
+        public KeyCodeAuthenticationHandler(IOptionsMonitor<KeyCodeAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
+        {
+            // nothing
+        }
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
 }
