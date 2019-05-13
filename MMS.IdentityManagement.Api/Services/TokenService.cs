@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Services
 {
     public interface ITokenService
     {
-        Task<AuthenticationResult> AuthenticateKeyCodeAsync(KeyCodeAuthenticationRequest request, CancellationToken cancellationToken = default);
+        Task<TokenValidationResult> ValidateKeyCodeAsync(KeyCodeAuthenticationRequest request, CancellationToken cancellationToken = default);
     }
 
     public class TokenService : ITokenService
@@ -18,7 +19,7 @@ namespace MMS.IdentityManagement.Api.Services
             _tokenConverter = tokenConverter ?? throw new ArgumentNullException(nameof(tokenConverter));
         }
 
-        public virtual Task<AuthenticationResult> AuthenticateKeyCodeAsync(KeyCodeAuthenticationRequest request, CancellationToken cancellationToken)
+        public virtual async Task<TokenValidationResult> ValidateKeyCodeAsync(KeyCodeAuthenticationRequest request, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

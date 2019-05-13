@@ -6,5 +6,8 @@ namespace MMS.IdentityManagement
     {
         [Required]
         public string ClientId { get; set; }
+
+        [Required]
+        public string ClientSecret { get; set; }
     }
 }
