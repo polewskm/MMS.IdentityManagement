@@ -2,6 +2,6 @@
 {
     public class TokenValidationResult : ValidationResult
     {
-        public TokenResult Token { get; set; }
+        public TokenResponse Token { get; set; }
     }
 }

@@ -24,7 +24,7 @@ namespace MMS.IdentityManagement.Api.Controllers
 
         [HttpPost]
         [Route("keycode")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TokenResult))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TokenResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         public virtual async Task<IActionResult> KeyCode([FromBody, Required] KeyCodeAuthenticationRequest request, CancellationToken cancellationToken = default)
         {
@@ -38,7 +38,7 @@ namespace MMS.IdentityManagement.Api.Controllers
 
         [HttpPost]
         [Route("refresh")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TokenResult))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TokenResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         public virtual IActionResult Refresh([FromBody, Required] TokenRefreshRequest request)
         {
