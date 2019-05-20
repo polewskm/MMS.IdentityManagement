@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -15,11 +14,12 @@ namespace MMS.IdentityManagement.Api.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
-        private readonly ITokenService _tokenService;
+        private readonly IClientValidator _clientValidator;
+        private readonly IKeyCodeValidator _keyCodeValidator;
 
-        public TokenController(ITokenService tokenService)
+        public TokenController(IClientValidator clientValidator)
         {
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _clientValidator = clientValidator;
         }
 
         [HttpPost]
@@ -31,9 +31,31 @@ namespace MMS.IdentityManagement.Api.Controllers
             if (request == null)
                 return BadRequest();
 
-            var result = await _tokenService.ValidateKeyCodeAsync(request, cancellationToken).ConfigureAwait(false);
+            var clientValidationResult = await _clientValidator.ValidateClientAsync(request.ClientId, request.ClientSecret, cancellationToken).ConfigureAwait(false);
+            if (!clientValidationResult.IsValid)
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = clientValidationResult.Error,
+                    Detail = clientValidationResult.ErrorDescription,
+                };
+                return BadRequest(problemDetails);
+            }
 
-            return Ok(result);
+            var keyCodeValidationResult = await _keyCodeValidator.ValidateKeyCodeAsync(request.KeyCode, cancellationToken).ConfigureAwait(false);
+            if (!keyCodeValidationResult.IsValid)
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = keyCodeValidationResult.Error,
+                    Detail = keyCodeValidationResult.ErrorDescription,
+                };
+                return BadRequest(problemDetails);
+            }
+
+            return Ok();
         }
 
         [HttpPost]
@@ -49,4 +71,5 @@ namespace MMS.IdentityManagement.Api.Controllers
         }
 
     }
+
 }

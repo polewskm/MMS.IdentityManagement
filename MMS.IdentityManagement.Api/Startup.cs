@@ -26,7 +26,6 @@ namespace MMS.IdentityManagement.Api
 
         public virtual void ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton<ITokenService, TokenService>();
             services.TryAddSingleton<ITokenConverter, TokenConverter>();
 
             services
