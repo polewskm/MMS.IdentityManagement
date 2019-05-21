@@ -83,6 +83,13 @@ namespace MMS.IdentityManagement.Claims
             return identity.FindFirst(MemberClaimTypes.EmailAddress)?.Value;
         }
 
+        public static string GetPhoneNumber(this ClaimsIdentity identity)
+        {
+            NullGuard(identity);
+
+            return identity.FindFirst(MemberClaimTypes.PhoneNumber)?.Value;
+        }
+
         public static DateTimeOffset? GetMemberSince(this ClaimsIdentity identity)
         {
             NullGuard(identity);
