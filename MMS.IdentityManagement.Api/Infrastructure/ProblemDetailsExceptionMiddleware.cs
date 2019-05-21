@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using MMS.IdentityManagement.Api.Services;
 using Newtonsoft.Json;
 
-namespace MMS.IdentityManagement.Api
+namespace MMS.IdentityManagement.Api.Infrastructure
 {
     public class ProblemDetailsExceptionMiddleware
     {

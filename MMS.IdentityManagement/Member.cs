@@ -1,25 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MMS.IdentityManagement
 {
     public class Member
     {
         public int MemberId { get; set; }
+
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string DisplayName { get; set; }
-        public DateTimeOffset JoinedWhen { get; set; }
-        public DateTimeOffset ExpiresWhen { get; set; }
 
-        public SensitiveValue<string> EmailAddress { get; set; }
-        public SensitiveValue<string> PhoneNumber { get; set; }
-    }
+        public DateTimeOffset MemberSince { get; set; }
+        public DateTimeOffset RenewalDue { get; set; }
 
-    public class SensitiveValue<T>
-    {
-        public string Name { get; set; }
-        public T Value { get; set; }
-        public bool IsSpecified { get; set; }
-        public bool CanRead { get; set; }
+        public string EmailAddress { get; set; }
+
+        public string PhoneNumber { get; set; }
+
+        public BoardMemberType BoardMemberType { get; set; }
+
+        public ICollection<string> ChampionAreas { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        public ICollection<string> Roles { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 }

@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MMS.IdentityManagement.Api.Infrastructure;
 using MMS.IdentityManagement.Api.Services;
 using Swashbuckle.AspNetCore.Swagger;
@@ -27,17 +22,13 @@ namespace MMS.IdentityManagement.Api
         public virtual void ConfigureServices(IServiceCollection services)
         {
             services.TryAddSingleton<ITokenConverter, TokenConverter>();
+            services.TryAddSingleton<IClientValidator, ClientValidator>();
+            services.TryAddSingleton<IKeyCodeValidator, KeyCodeValidator>();
+            services.TryAddSingleton<IKeyCodeAuthenticationHandler, KeyCodeAuthenticationHandler>();
 
             services
                 .AddMvc()
                 .AddProblemDetails();
-
-            services
-                .AddAuthentication("KeyCode")
-                .AddScheme<KeyCodeAuthenticationOptions, KeyCodeAuthenticationHandler>("KeyCode", options =>
-                {
-                    // nothing
-                });
 
             services.AddSwaggerGen(options =>
             {
@@ -71,23 +62,4 @@ namespace MMS.IdentityManagement.Api
         }
 
     }
-
-    public class KeyCodeAuthenticationOptions : AuthenticationSchemeOptions
-    {
-    }
-
-    public class KeyCodeAuthenticationHandler : AuthenticationHandler<KeyCodeAuthenticationOptions>
-    {
-        public KeyCodeAuthenticationHandler(IOptionsMonitor<KeyCodeAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
-            : base(options, logger, encoder, clock)
-        {
-            // nothing
-        }
-
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
 }

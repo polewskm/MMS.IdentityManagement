@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using MMS.IdentityManagement.Api.Services;
 
-namespace MMS.IdentityManagement.Api
+namespace MMS.IdentityManagement.Api.Infrastructure
 {
     public class ProblemDetailsExceptionFilter : IExceptionFilter
     {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MMS.IdentityManagement
+namespace MMS.IdentityManagement.Requests
 {
     public abstract class ClientRequest
     {

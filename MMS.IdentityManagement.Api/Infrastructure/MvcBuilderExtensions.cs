@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using MMS.IdentityManagement.Api.Infrastructure;
 using MMS.IdentityManagement.Api.Services;
 
-namespace MMS.IdentityManagement.Api
+namespace MMS.IdentityManagement.Api.Infrastructure
 {
     public static class MvcBuilderExtensions
     {

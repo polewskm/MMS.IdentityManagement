@@ -4,10 +4,6 @@ using Newtonsoft.Json;
 
 namespace MMS.IdentityManagement
 {
-    public class Token
-    {
-    }
-
     public class TokenResponse
     {
         // https://auth0.com/docs/tokens

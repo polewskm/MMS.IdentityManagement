@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
-using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Services
 {
@@ -15,8 +14,6 @@ namespace MMS.IdentityManagement.Api.Services
         ProblemDetails FromServerError(HttpContext httpContext, Exception exception);
 
         ProblemDetails FromClientError(ActionContext actionContext, IClientErrorActionResult clientError);
-
-        ProblemDetails FromValidationResult(ActionContext actionContext, ValidationResult validationResult);
     }
 
     public class ProblemDetailsFactory : IProblemDetailsFactory
@@ -87,20 +84,6 @@ namespace MMS.IdentityManagement.Api.Services
                     Title = ReasonPhrases.GetReasonPhrase(statusCode),
                 };
             }
-
-            AddCommonDetails(problemDetails, actionContext.HttpContext);
-
-            return problemDetails;
-        }
-
-        public virtual ProblemDetails FromValidationResult(ActionContext actionContext, ValidationResult validationResult)
-        {
-            var problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = validationResult.Error,
-                Detail = validationResult.ErrorDescription,
-            };
 
             AddCommonDetails(problemDetails, actionContext.HttpContext);
 

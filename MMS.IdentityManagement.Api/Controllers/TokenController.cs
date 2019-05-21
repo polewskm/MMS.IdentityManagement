@@ -1,9 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.Services;
+using MMS.IdentityManagement.Requests;
 
 namespace MMS.IdentityManagement.Api.Controllers
 {
@@ -14,53 +17,32 @@ namespace MMS.IdentityManagement.Api.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
-        private readonly IClientValidator _clientValidator;
-        private readonly IKeyCodeValidator _keyCodeValidator;
+        private readonly IKeyCodeAuthenticationHandler _keyCodeAuthenticationHandler;
 
-        public TokenController(IClientValidator clientValidator)
+        public TokenController(IKeyCodeAuthenticationHandler keyCodeAuthenticationHandler)
         {
-            _clientValidator = clientValidator;
+            _keyCodeAuthenticationHandler = keyCodeAuthenticationHandler ?? throw new ArgumentNullException(nameof(keyCodeAuthenticationHandler));
         }
 
         [HttpPost]
         [Route("keycode")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TokenResponse))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(KeyCodeAuthenticationResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         public virtual async Task<IActionResult> KeyCode([FromBody, Required] KeyCodeAuthenticationRequest request, CancellationToken cancellationToken = default)
         {
             if (request == null)
                 return BadRequest();
 
-            var clientValidationResult = await _clientValidator.ValidateClientAsync(request.ClientId, request.ClientSecret, cancellationToken).ConfigureAwait(false);
-            if (!clientValidationResult.IsValid)
-            {
-                var problemDetails = new ProblemDetails
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = clientValidationResult.Error,
-                    Detail = clientValidationResult.ErrorDescription,
-                };
-                return BadRequest(problemDetails);
-            }
-
-            var keyCodeValidationResult = await _keyCodeValidator.ValidateKeyCodeAsync(request.KeyCode, cancellationToken).ConfigureAwait(false);
-            if (!keyCodeValidationResult.IsValid)
-            {
-                var problemDetails = new ProblemDetails
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = keyCodeValidationResult.Error,
-                    Detail = keyCodeValidationResult.ErrorDescription,
-                };
-                return BadRequest(problemDetails);
-            }
+            var result = await _keyCodeAuthenticationHandler.AuthenticateAsync(request, cancellationToken).ConfigureAwait(false);
+            if (!result.Success)
+                return BadRequest(result.AsProblemDetails());
 
             return Ok();
         }
 
         [HttpPost]
         [Route("refresh")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TokenResponse))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(KeyCodeAuthenticationResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         public virtual IActionResult Refresh([FromBody, Required] TokenRefreshRequest request)
         {
