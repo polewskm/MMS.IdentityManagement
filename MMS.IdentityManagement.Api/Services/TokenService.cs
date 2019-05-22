@@ -7,41 +7,76 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Claims;
-using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Services
 {
-    public class TokenValidationRequest
-    {
-        public string Token { get; set; }
-    }
-
-    public class TokenValidationResult : CommonResult
-    {
-        public ClaimsPrincipal Subject { get; set; }
-        public SecurityToken SecurityToken { get; set; }
-    }
-
     public interface ITokenService
     {
         Task<CreateTokenResult> CreateTokenAsync(CreateTokenRequest request, CancellationToken cancellationToken = default);
 
-        Task<TokenValidationResult> ValidateTokenAsync(string token, CancellationToken cancellationToken = default);
+        Task<TokenValidationResult> ValidateTokenAsync(TokenValidationRequest request, CancellationToken cancellationToken = default);
     }
-
-    // SigningCredentials
 
     public class TokenService : ITokenService
     {
+        private readonly TokenOptions _options;
         private readonly ISystemClock _systemClock;
-        private readonly SecurityTokenHandler _securityTokenHandler = new JwtSecurityTokenHandler();
+        private readonly SecurityTokenHandler _securityTokenHandler = CreateSecurityTokenHandler();
 
-        public TokenService(ISystemClock systemClock)
+        private static SecurityTokenHandler CreateSecurityTokenHandler()
         {
+            var handler = new JwtSecurityTokenHandler
+            {
+                InboundClaimTypeMap =
+                {
+                    [TokenClaimTypes.MemberId] = IdentityClaimTypes.MemberId,
+                    [TokenClaimTypes.DisplayName] = IdentityClaimTypes.DisplayName,
+                    [TokenClaimTypes.FirstName] = IdentityClaimTypes.FirstName,
+                    [TokenClaimTypes.LastName] = IdentityClaimTypes.LastName,
+                    [TokenClaimTypes.EmailAddress] = IdentityClaimTypes.EmailAddress,
+                    [TokenClaimTypes.PhoneNumber] = IdentityClaimTypes.PhoneNumber,
+                    [TokenClaimTypes.MemberSince] = IdentityClaimTypes.MemberSince,
+                    [TokenClaimTypes.RenewalDue] = IdentityClaimTypes.RenewalDue,
+                    [TokenClaimTypes.BoardMemberType] = IdentityClaimTypes.BoardMemberType,
+                    [TokenClaimTypes.ChampionArea] = IdentityClaimTypes.ChampionArea,
+                    [TokenClaimTypes.Role] = IdentityClaimTypes.Role,
+                    [TokenClaimTypes.AuthenticationMethod] = IdentityClaimTypes.AuthenticationMethod,
+                    [TokenClaimTypes.AuthenticationTime] = IdentityClaimTypes.AuthenticationTime,
+                    [TokenClaimTypes.IdentityProvider] = IdentityClaimTypes.IdentityProvider,
+                    [TokenClaimTypes.ClientId] = IdentityClaimTypes.ClientId,
+                    [TokenClaimTypes.Nonce] = IdentityClaimTypes.Nonce
+                },
+
+                OutboundClaimTypeMap =
+                {
+                    [IdentityClaimTypes.MemberId] = TokenClaimTypes.MemberId,
+                    [IdentityClaimTypes.DisplayName] = TokenClaimTypes.DisplayName,
+                    [IdentityClaimTypes.FirstName] = TokenClaimTypes.FirstName,
+                    [IdentityClaimTypes.LastName] = TokenClaimTypes.LastName,
+                    [IdentityClaimTypes.EmailAddress] = TokenClaimTypes.EmailAddress,
+                    [IdentityClaimTypes.PhoneNumber] = TokenClaimTypes.PhoneNumber,
+                    [IdentityClaimTypes.MemberSince] = TokenClaimTypes.MemberSince,
+                    [IdentityClaimTypes.RenewalDue] = TokenClaimTypes.RenewalDue,
+                    [IdentityClaimTypes.BoardMemberType] = TokenClaimTypes.BoardMemberType,
+                    [IdentityClaimTypes.ChampionArea] = TokenClaimTypes.ChampionArea,
+                    [IdentityClaimTypes.Role] = TokenClaimTypes.Role,
+                    [IdentityClaimTypes.AuthenticationMethod] = TokenClaimTypes.AuthenticationMethod,
+                    [IdentityClaimTypes.AuthenticationTime] = TokenClaimTypes.AuthenticationTime,
+                    [IdentityClaimTypes.IdentityProvider] = TokenClaimTypes.IdentityProvider,
+                    [IdentityClaimTypes.ClientId] = TokenClaimTypes.ClientId,
+                    [IdentityClaimTypes.Nonce] = TokenClaimTypes.Nonce
+                }
+            };
+            return handler;
+        }
+
+        public TokenService(IOptions<TokenOptions> options, ISystemClock systemClock)
+        {
+            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _systemClock = systemClock ?? throw new ArgumentNullException(nameof(systemClock));
         }
 
@@ -50,18 +85,16 @@ namespace MMS.IdentityManagement.Api.Services
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            const string issuer = "urn:milwaukeemakerspace.org";
-
             var createdWhen = _systemClock.UtcNow;
-            var expiresWhen = createdWhen.AddHours(24);
+            var expiresWhen = createdWhen + _options.TokenLifetime;
 
             var authenticationTime = createdWhen.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
             var issuedAt = createdWhen.UtcDateTime;
-            var notBefore = issuedAt.AddMilliseconds(-100);
             var expires = expiresWhen.UtcDateTime;
 
             var client = request.Client;
             var audience = client.Id;
+            var issuer = _options.Issuer;
 
             var member = request.Member;
             var memberId = member.MemberId.ToString(CultureInfo.InvariantCulture);
@@ -69,29 +102,37 @@ namespace MMS.IdentityManagement.Api.Services
             var renewalDue = member.RenewalDue.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
             var boardMemberType = member.BoardMemberType.ToString();
 
-            var claims = new List<Claim>
+            var claims = new List<Claim>();
+
+            void AddClaim(string type, string value, string valueType = ClaimValueTypes.String)
             {
-                new Claim(MemberClaimTypes.MemberId, memberId, ClaimValueTypes.Integer, issuer),
-                new Claim(MemberClaimTypes.DisplayName, member.DisplayName, ClaimValueTypes.String, issuer),
-                new Claim(MemberClaimTypes.FirstName, member.FirstName, ClaimValueTypes.String, issuer),
-                new Claim(MemberClaimTypes.LastName, member.LastName, ClaimValueTypes.String, issuer),
-                new Claim(MemberClaimTypes.EmailAddress, member.EmailAddress, ClaimValueTypes.Email, issuer),
-                new Claim(MemberClaimTypes.PhoneNumber, member.PhoneNumber, ClaimValueTypes.String, issuer),
-                new Claim(MemberClaimTypes.MemberSince, memberSince, ClaimValueTypes.Integer, issuer),
-                new Claim(MemberClaimTypes.RenewalDue, renewalDue, ClaimValueTypes.Integer, issuer),
-                new Claim(MemberClaimTypes.BoardMemberType, boardMemberType, ClaimValueTypes.String, issuer),
-                //
-                new Claim(MemberClaimTypes.AuthenticationMethod, request.AuthenticationType, ClaimValueTypes.String, issuer),
-                new Claim(MemberClaimTypes.AuthenticationTime, authenticationTime, ClaimValueTypes.Integer, issuer),
-                new Claim(MemberClaimTypes.IdentityProvider, "mms", ClaimValueTypes.String, issuer),
-                new Claim(MemberClaimTypes.ClientId, client.Id, ClaimValueTypes.String, issuer),
-            };
+                claims.Add(new Claim(type, value, valueType, issuer));
+            }
 
-            if (!string.IsNullOrEmpty(request.Nonce))
-                claims.Add(new Claim(MemberClaimTypes.Nonce, request.Nonce, ClaimValueTypes.String, issuer));
+            void AddClaimIfNotEmpty(string type, string value, string valueType = ClaimValueTypes.String)
+            {
+                if (!string.IsNullOrEmpty(value))
+                    AddClaim(type, value, valueType);
+            }
 
-            claims.AddRange(member.Roles.Select(role => new Claim(MemberClaimTypes.Role, role, ClaimValueTypes.String, issuer)));
-            claims.AddRange(member.ChampionAreas.Select(area => new Claim(MemberClaimTypes.ChampionArea, area, ClaimValueTypes.String, issuer)));
+            AddClaim(IdentityClaimTypes.MemberId, memberId, ClaimValueTypes.Integer);
+            AddClaimIfNotEmpty(IdentityClaimTypes.DisplayName, member.DisplayName);
+            AddClaimIfNotEmpty(IdentityClaimTypes.FirstName, member.FirstName);
+            AddClaimIfNotEmpty(IdentityClaimTypes.LastName, member.LastName);
+            AddClaimIfNotEmpty(IdentityClaimTypes.EmailAddress, member.EmailAddress, ClaimValueTypes.Email);
+            AddClaimIfNotEmpty(IdentityClaimTypes.PhoneNumber, member.PhoneNumber);
+            AddClaim(IdentityClaimTypes.MemberSince, memberSince, ClaimValueTypes.Integer);
+            AddClaim(IdentityClaimTypes.RenewalDue, renewalDue, ClaimValueTypes.Integer);
+            AddClaim(IdentityClaimTypes.BoardMemberType, boardMemberType);
+
+            AddClaimIfNotEmpty(IdentityClaimTypes.AuthenticationMethod, request.AuthenticationType);
+            AddClaim(IdentityClaimTypes.AuthenticationTime, authenticationTime, ClaimValueTypes.Integer);
+            AddClaimIfNotEmpty(IdentityClaimTypes.IdentityProvider, _options.IdentityProvider);
+            AddClaim(IdentityClaimTypes.ClientId, client.Id);
+            AddClaimIfNotEmpty(IdentityClaimTypes.Nonce, request.Nonce);
+
+            claims.AddRange(member.Roles.Select(role => new Claim(IdentityClaimTypes.Role, role, ClaimValueTypes.String, issuer)));
+            claims.AddRange(member.ChampionAreas.Select(area => new Claim(IdentityClaimTypes.ChampionArea, area, ClaimValueTypes.String, issuer)));
 
             var subject = new ClaimsIdentity(claims, request.AuthenticationType);
 
@@ -103,10 +144,11 @@ namespace MMS.IdentityManagement.Api.Services
                 Audience = audience,
                 Subject = subject,
                 IssuedAt = issuedAt,
-                NotBefore = notBefore,
+                NotBefore = issuedAt,
                 Expires = expires,
-                SigningCredentials = null,
+                SigningCredentials = _options.SigningCredentials,
             };
+
             var securityToken = _securityTokenHandler.CreateToken(tokenDescriptor);
             var token = _securityTokenHandler.WriteToken(securityToken);
 
@@ -116,6 +158,37 @@ namespace MMS.IdentityManagement.Api.Services
                 SecurityToken = securityToken,
                 CreatedWhen = createdWhen,
                 ExpiresWhen = expiresWhen,
+            };
+            return Task.FromResult(result);
+        }
+
+        public virtual Task<TokenValidationResult> ValidateTokenAsync(TokenValidationRequest request, CancellationToken cancellationToken = default)
+        {
+            var validationParameters = new TokenValidationParameters
+            {
+                RequireExpirationTime = true,
+                RequireSignedTokens = true,
+                SaveSigninToken = false,
+                ValidateActor = false,
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateIssuerSigningKey = false,
+                ValidateLifetime = true,
+                ValidateTokenReplay = false,
+
+                ValidIssuer = _options.Issuer,
+                ValidAudiences = request.ValidAudiences,
+                IssuerSigningKey = _options.SigningValidationKey,
+            };
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
+
+            var result = new TokenValidationResult
+            {
+                Principal = principal,
+                SecurityToken = securityToken,
             };
             return Task.FromResult(result);
         }

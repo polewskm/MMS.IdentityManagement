@@ -12,6 +12,8 @@ namespace MMS.IdentityManagement.Claims
 
         #region Parsing
 
+        private delegate bool TryParseDelegate<T>(string input, out T result) where T : struct;
+
         private static readonly TryParseDelegate<int> TryParseInt32 = (string input, out int result) => int.TryParse(input, out result);
         private static readonly TryParseDelegate<DateTimeOffset> TryParseDateTimeOffset = (string input, out DateTimeOffset result) => DateTimeOffset.TryParse(input, out result);
         private static readonly TryParseDelegate<DateTimeOffset> TryParseUnixTimeSeconds = (string input, out DateTimeOffset result) =>
@@ -24,9 +26,6 @@ namespace MMS.IdentityManagement.Claims
             result = DateTimeOffset.MinValue;
             return false;
         };
-
-        private delegate bool TryParseDelegate<T>(string input, out T result)
-            where T : struct;
 
         private static T? ParseFirst<T>(ClaimsIdentity identity, string claimType, TryParseDelegate<T> tryParse)
             where T : struct
@@ -52,70 +51,70 @@ namespace MMS.IdentityManagement.Claims
         {
             NullGuard(identity);
 
-            return ParseFirst(identity, MemberClaimTypes.MemberId, TryParseInt32);
+            return ParseFirst(identity, IdentityClaimTypes.MemberId, TryParseInt32);
         }
 
         public static string GetDisplayName(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return identity.FindFirst(MemberClaimTypes.DisplayName)?.Value;
+            return identity.FindFirst(IdentityClaimTypes.DisplayName)?.Value;
         }
 
         public static string GetFirstName(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return identity.FindFirst(MemberClaimTypes.FirstName)?.Value;
+            return identity.FindFirst(IdentityClaimTypes.FirstName)?.Value;
         }
 
         public static string GetLastName(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return identity.FindFirst(MemberClaimTypes.LastName)?.Value;
+            return identity.FindFirst(IdentityClaimTypes.LastName)?.Value;
         }
 
         public static string GetEmailAddress(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return identity.FindFirst(MemberClaimTypes.EmailAddress)?.Value;
+            return identity.FindFirst(IdentityClaimTypes.EmailAddress)?.Value;
         }
 
         public static string GetPhoneNumber(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return identity.FindFirst(MemberClaimTypes.PhoneNumber)?.Value;
+            return identity.FindFirst(IdentityClaimTypes.PhoneNumber)?.Value;
         }
 
         public static DateTimeOffset? GetMemberSince(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return ParseFirst(identity, MemberClaimTypes.MemberSince, TryParseUnixTimeSeconds);
+            return ParseFirst(identity, IdentityClaimTypes.MemberSince, TryParseUnixTimeSeconds);
         }
 
         public static DateTimeOffset? GetRenewalDue(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return ParseFirst(identity, MemberClaimTypes.RenewalDue, TryParseUnixTimeSeconds);
+            return ParseFirst(identity, IdentityClaimTypes.RenewalDue, TryParseUnixTimeSeconds);
         }
 
         public static bool IsSystemAdministrator(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return identity.HasClaim(MemberClaimTypes.Role, MemberRoles.SystemAdministrator);
+            return identity.HasClaim(IdentityClaimTypes.Role, MemberRoles.SystemAdministrator);
         }
 
         public static bool IsBoardMember(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            var claim = identity.FindFirst(MemberClaimTypes.BoardMemberType);
+            var claim = identity.FindFirst(IdentityClaimTypes.BoardMemberType);
             return claim != null && !string.IsNullOrEmpty(claim.Value) && Enum.IsDefined(typeof(BoardMemberType), claim.Value);
         }
 
@@ -123,7 +122,7 @@ namespace MMS.IdentityManagement.Claims
         {
             NullGuard(identity);
 
-            var claim = identity.FindFirst(MemberClaimTypes.BoardMemberType);
+            var claim = identity.FindFirst(IdentityClaimTypes.BoardMemberType);
             if (claim != null && !string.IsNullOrEmpty(claim.Value) && Enum.TryParse(claim.Value, out BoardMemberType type))
                 return type;
 
@@ -134,7 +133,7 @@ namespace MMS.IdentityManagement.Claims
         {
             NullGuard(identity);
 
-            var claim = identity.FindFirst(MemberClaimTypes.ChampionArea);
+            var claim = identity.FindFirst(IdentityClaimTypes.ChampionArea);
             return claim != null;
         }
 
@@ -142,7 +141,7 @@ namespace MMS.IdentityManagement.Claims
         {
             NullGuard(identity);
 
-            return identity.FindAll(MemberClaimTypes.ChampionArea).Select(c => c.Value).ToArray();
+            return identity.FindAll(IdentityClaimTypes.ChampionArea).Select(c => c.Value).ToArray();
         }
 
     }

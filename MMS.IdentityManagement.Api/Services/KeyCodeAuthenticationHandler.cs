@@ -32,6 +32,7 @@ namespace MMS.IdentityManagement.Api.Services
                 ClientId = request.ClientId,
                 ClientSecret = request.ClientSecret,
             };
+
             var clientValidationResult = await _clientValidator.ValidateClientAsync(clientValidationRequest, cancellationToken).ConfigureAwait(false);
             if (!clientValidationResult.Success)
                 return clientValidationResult.AsError<KeyCodeAuthenticationResult>();
@@ -41,6 +42,7 @@ namespace MMS.IdentityManagement.Api.Services
                 Client = clientValidationResult.Client,
                 KeyCode = request.KeyCode,
             };
+
             var keyCodeValidationResult = await _keyCodeValidator.ValidateKeyCodeAsync(keyCodeValidationRequest, cancellationToken).ConfigureAwait(false);
             if (!keyCodeValidationResult.Success)
                 return keyCodeValidationResult.AsError<KeyCodeAuthenticationResult>();
@@ -53,7 +55,10 @@ namespace MMS.IdentityManagement.Api.Services
                 Member = keyCodeValidationResult.Member,
                 Nonce = request.Nonce,
             };
+
             var createTokenResult = await _tokenService.CreateTokenAsync(createTokenRequest, cancellationToken).ConfigureAwait(false);
+            if (!createTokenResult.Success)
+                return createTokenResult.AsError<KeyCodeAuthenticationResult>();
 
             var result = new KeyCodeAuthenticationResult
             {

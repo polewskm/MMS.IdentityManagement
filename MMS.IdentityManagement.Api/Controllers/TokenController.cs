@@ -53,5 +53,4 @@ namespace MMS.IdentityManagement.Api.Controllers
         }
 
     }
-
 }

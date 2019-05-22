@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.IdentityModel.Tokens;
+using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Models
 {
-    public class CreateTokenResult
+    public class CreateTokenResult : CommonResult
     {
         public string Token { get; set; }
 
