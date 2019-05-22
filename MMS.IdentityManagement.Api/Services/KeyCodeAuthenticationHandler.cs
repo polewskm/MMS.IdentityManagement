@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Tokens;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Requests;
 using MMS.IdentityManagement.Validation;
@@ -18,7 +17,6 @@ namespace MMS.IdentityManagement.Api.Services
         private readonly IClientValidator _clientValidator;
         private readonly IKeyCodeValidator _keyCodeValidator;
         private readonly ITokenService _tokenService;
-        private readonly SecurityTokenHandler _securityTokenHandler;
 
         public KeyCodeAuthenticationHandler(IClientValidator clientValidator, IKeyCodeValidator keyCodeValidator, ITokenService tokenService)
         {
@@ -49,15 +47,23 @@ namespace MMS.IdentityManagement.Api.Services
 
             var createTokenRequest = new CreateTokenRequest
             {
-                AuthenticationType = "keycode",
+                TokenType = TokenTypes.AccessToken,
+                AuthenticationType = AuthenticationTypes.KeyCode,
                 Client = clientValidationResult.Client,
                 Member = keyCodeValidationResult.Member,
                 Nonce = request.Nonce,
             };
-            var securityToken = await _tokenService.CreateTokenAsync(createTokenRequest, cancellationToken).ConfigureAwait(false);
-            var accessToken = _tokenService.SerializeToken(securityToken);
+            var createTokenResult = await _tokenService.CreateTokenAsync(createTokenRequest, cancellationToken).ConfigureAwait(false);
 
-            throw new NotImplementedException();
+            var result = new KeyCodeAuthenticationResult
+            {
+                IdentityToken = createTokenResult.Token,
+                AccessToken = createTokenResult.Token,
+                TokenType = TokenTypes.BearerToken,
+                AccessTokenExpiresWhen = createTokenResult.ExpiresWhen,
+            };
+
+            return result;
         }
 
     }

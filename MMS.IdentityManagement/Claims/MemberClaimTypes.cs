@@ -22,6 +22,7 @@
         public const string AuthenticationMethod = "amr";
         public const string AuthenticationTime = "auth_time";
         public const string IdentityProvider = "idp";
+        public const string ClientId = "client_id";
         public const string Nonce = "nonce";
     }
 }

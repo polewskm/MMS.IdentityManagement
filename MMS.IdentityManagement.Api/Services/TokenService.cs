@@ -7,18 +7,33 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Claims;
+using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Services
 {
+    public class TokenValidationRequest
+    {
+        public string Token { get; set; }
+    }
+
+    public class TokenValidationResult : CommonResult
+    {
+        public ClaimsPrincipal Subject { get; set; }
+        public SecurityToken SecurityToken { get; set; }
+    }
+
     public interface ITokenService
     {
-        Task<SecurityToken> CreateTokenAsync(CreateTokenRequest request, CancellationToken cancellationToken = default);
+        Task<CreateTokenResult> CreateTokenAsync(CreateTokenRequest request, CancellationToken cancellationToken = default);
 
-        string SerializeToken(SecurityToken securityToken);
+        Task<TokenValidationResult> ValidateTokenAsync(string token, CancellationToken cancellationToken = default);
     }
+
+    // SigningCredentials
 
     public class TokenService : ITokenService
     {
@@ -30,18 +45,20 @@ namespace MMS.IdentityManagement.Api.Services
             _systemClock = systemClock ?? throw new ArgumentNullException(nameof(systemClock));
         }
 
-        public virtual Task<SecurityToken> CreateTokenAsync(CreateTokenRequest request, CancellationToken cancellationToken = default)
+        public virtual Task<CreateTokenResult> CreateTokenAsync(CreateTokenRequest request, CancellationToken cancellationToken = default)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
             const string issuer = "urn:milwaukeemakerspace.org";
 
-            var now = _systemClock.UtcNow;
-            var authenticationTime = now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-            var issuedAt = now.UtcDateTime;
+            var createdWhen = _systemClock.UtcNow;
+            var expiresWhen = createdWhen.AddHours(24);
+
+            var authenticationTime = createdWhen.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+            var issuedAt = createdWhen.UtcDateTime;
             var notBefore = issuedAt.AddMilliseconds(-100);
-            var expires = issuedAt.AddHours(24);
+            var expires = expiresWhen.UtcDateTime;
 
             var client = request.Client;
             var audience = client.Id;
@@ -67,6 +84,7 @@ namespace MMS.IdentityManagement.Api.Services
                 new Claim(MemberClaimTypes.AuthenticationMethod, request.AuthenticationType, ClaimValueTypes.String, issuer),
                 new Claim(MemberClaimTypes.AuthenticationTime, authenticationTime, ClaimValueTypes.Integer, issuer),
                 new Claim(MemberClaimTypes.IdentityProvider, "mms", ClaimValueTypes.String, issuer),
+                new Claim(MemberClaimTypes.ClientId, client.Id, ClaimValueTypes.String, issuer),
             };
 
             if (!string.IsNullOrEmpty(request.Nonce))
@@ -90,13 +108,16 @@ namespace MMS.IdentityManagement.Api.Services
                 SigningCredentials = null,
             };
             var securityToken = _securityTokenHandler.CreateToken(tokenDescriptor);
+            var token = _securityTokenHandler.WriteToken(securityToken);
 
-            return Task.FromResult(securityToken);
-        }
-
-        public virtual string SerializeToken(SecurityToken securityToken)
-        {
-            return _securityTokenHandler.WriteToken(securityToken);
+            var result = new CreateTokenResult
+            {
+                Token = token,
+                SecurityToken = securityToken,
+                CreatedWhen = createdWhen,
+                ExpiresWhen = expiresWhen,
+            };
+            return Task.FromResult(result);
         }
 
     }
