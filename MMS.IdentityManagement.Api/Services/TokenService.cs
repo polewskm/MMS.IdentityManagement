@@ -6,11 +6,11 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Claims;
+using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Services
 {
@@ -24,7 +24,6 @@ namespace MMS.IdentityManagement.Api.Services
     public class TokenService : ITokenService
     {
         private readonly TokenOptions _options;
-        private readonly ISystemClock _systemClock;
         private readonly SecurityTokenHandler _securityTokenHandler = CreateSecurityTokenHandler();
 
         private static SecurityTokenHandler CreateSecurityTokenHandler()
@@ -74,10 +73,9 @@ namespace MMS.IdentityManagement.Api.Services
             return handler;
         }
 
-        public TokenService(IOptions<TokenOptions> options, ISystemClock systemClock)
+        public TokenService(IOptions<TokenOptions> options)
         {
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _systemClock = systemClock ?? throw new ArgumentNullException(nameof(systemClock));
         }
 
         public virtual Task<CreateTokenResult> CreateTokenAsync(CreateTokenRequest request, CancellationToken cancellationToken = default)
@@ -85,7 +83,7 @@ namespace MMS.IdentityManagement.Api.Services
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var createdWhen = _systemClock.UtcNow;
+            var createdWhen = request.AuthenticationTime;
             var expiresWhen = createdWhen + _options.TokenLifetime;
 
             var authenticationTime = createdWhen.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
@@ -106,30 +104,25 @@ namespace MMS.IdentityManagement.Api.Services
 
             void AddClaim(string type, string value, string valueType = ClaimValueTypes.String)
             {
-                claims.Add(new Claim(type, value, valueType, issuer));
-            }
-
-            void AddClaimIfNotEmpty(string type, string value, string valueType = ClaimValueTypes.String)
-            {
                 if (!string.IsNullOrEmpty(value))
-                    AddClaim(type, value, valueType);
+                    claims.Add(new Claim(type, value, valueType, issuer));
             }
 
             AddClaim(IdentityClaimTypes.MemberId, memberId, ClaimValueTypes.Integer);
-            AddClaimIfNotEmpty(IdentityClaimTypes.DisplayName, member.DisplayName);
-            AddClaimIfNotEmpty(IdentityClaimTypes.FirstName, member.FirstName);
-            AddClaimIfNotEmpty(IdentityClaimTypes.LastName, member.LastName);
-            AddClaimIfNotEmpty(IdentityClaimTypes.EmailAddress, member.EmailAddress, ClaimValueTypes.Email);
-            AddClaimIfNotEmpty(IdentityClaimTypes.PhoneNumber, member.PhoneNumber);
+            AddClaim(IdentityClaimTypes.DisplayName, member.DisplayName);
+            AddClaim(IdentityClaimTypes.FirstName, member.FirstName);
+            AddClaim(IdentityClaimTypes.LastName, member.LastName);
+            AddClaim(IdentityClaimTypes.EmailAddress, member.EmailAddress, ClaimValueTypes.Email);
+            AddClaim(IdentityClaimTypes.PhoneNumber, member.PhoneNumber);
             AddClaim(IdentityClaimTypes.MemberSince, memberSince, ClaimValueTypes.Integer);
             AddClaim(IdentityClaimTypes.RenewalDue, renewalDue, ClaimValueTypes.Integer);
             AddClaim(IdentityClaimTypes.BoardMemberType, boardMemberType);
 
-            AddClaimIfNotEmpty(IdentityClaimTypes.AuthenticationMethod, request.AuthenticationType);
+            AddClaim(IdentityClaimTypes.AuthenticationMethod, request.AuthenticationType);
             AddClaim(IdentityClaimTypes.AuthenticationTime, authenticationTime, ClaimValueTypes.Integer);
-            AddClaimIfNotEmpty(IdentityClaimTypes.IdentityProvider, _options.IdentityProvider);
+            AddClaim(IdentityClaimTypes.IdentityProvider, _options.IdentityProvider);
             AddClaim(IdentityClaimTypes.ClientId, client.Id);
-            AddClaimIfNotEmpty(IdentityClaimTypes.Nonce, request.Nonce);
+            AddClaim(IdentityClaimTypes.Nonce, request.Nonce);
 
             claims.AddRange(member.Roles.Select(role => new Claim(IdentityClaimTypes.Role, role, ClaimValueTypes.String, issuer)));
             claims.AddRange(member.ChampionAreas.Select(area => new Claim(IdentityClaimTypes.ChampionArea, area, ClaimValueTypes.String, issuer)));
@@ -155,7 +148,7 @@ namespace MMS.IdentityManagement.Api.Services
             var result = new CreateTokenResult
             {
                 Token = token,
-                SecurityToken = securityToken,
+                Subject = subject,
                 CreatedWhen = createdWhen,
                 ExpiresWhen = expiresWhen,
             };
@@ -194,4 +187,19 @@ namespace MMS.IdentityManagement.Api.Services
         }
 
     }
+
+    public class CreateRefreshTokenRequest
+    {
+        public ClaimsIdentity Subject { get; set; }
+    }
+
+    public class CreateRefreshTokenResult : CommonResult
+    {
+        public string Token { get; set; }
+    }
+
+    public interface IRefreshTokenRepository
+    {
+    }
+
 }

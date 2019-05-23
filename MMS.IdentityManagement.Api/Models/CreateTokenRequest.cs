@@ -1,11 +1,15 @@
 ﻿
+using System;
+
 namespace MMS.IdentityManagement.Api.Models
 {
     public class CreateTokenRequest
     {
-        public string TokenType { get; set; }
+        //public string TokenType { get; set; }
 
         public string AuthenticationType { get; set; }
+
+        public DateTimeOffset AuthenticationTime { get; set; }
 
         public Client Client { get; set; }
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Models
@@ -8,7 +8,7 @@ namespace MMS.IdentityManagement.Api.Models
     {
         public string Token { get; set; }
 
-        public SecurityToken SecurityToken { get; set; }
+        public ClaimsIdentity Subject { get; set; }
 
         public DateTimeOffset CreatedWhen { get; set; }
 
