@@ -6,16 +6,23 @@ namespace MMS.IdentityManagement.Requests
 {
     public class KeyCodeAuthenticationResult : CommonResult
     {
-        [JsonProperty("id_token")]
-        public string IdentityToken { get; set; }
+        [JsonProperty("token_type")]
+        public string TokenType { get; set; }
 
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }
 
-        [JsonProperty("token_type")]
-        public string TokenType { get; set; }
-
         [JsonProperty("expires_in")]
+        private long? AccessTokenExpiresIn
+        {
+            get => AccessTokenExpiresWhen?.ToUnixTimeSeconds();
+            set => AccessTokenExpiresWhen = value.HasValue ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeSeconds(value.Value) : null;
+        }
+
+        [JsonIgnore]
         public DateTimeOffset? AccessTokenExpiresWhen { get; set; }
+
+        [JsonProperty("refresh_token")]
+        public string RefreshToken { get; set; }
     }
 }

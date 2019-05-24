@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MMS.IdentityManagement.Api.Models;
@@ -23,8 +24,9 @@ namespace MMS.IdentityManagement.Api.Services
 
     public class TokenService : ITokenService
     {
-        private readonly TokenOptions _options;
         private readonly SecurityTokenHandler _securityTokenHandler = CreateSecurityTokenHandler();
+        private readonly TokenOptions _options;
+        private readonly ISystemClock _systemClock;
 
         private static SecurityTokenHandler CreateSecurityTokenHandler()
         {
@@ -73,9 +75,10 @@ namespace MMS.IdentityManagement.Api.Services
             return handler;
         }
 
-        public TokenService(IOptions<TokenOptions> options)
+        public TokenService(IOptions<TokenOptions> options, ISystemClock systemClock)
         {
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            _systemClock = systemClock ?? throw new ArgumentNullException(nameof(systemClock));
         }
 
         public virtual Task<CreateTokenResult> CreateTokenAsync(CreateTokenRequest request, CancellationToken cancellationToken = default)
@@ -83,12 +86,10 @@ namespace MMS.IdentityManagement.Api.Services
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var createdWhen = request.AuthenticationTime;
-            var expiresWhen = createdWhen + _options.TokenLifetime;
-
-            var authenticationTime = createdWhen.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-            var issuedAt = createdWhen.UtcDateTime;
-            var expires = expiresWhen.UtcDateTime;
+            var createdWhen = _systemClock.UtcNow;
+            var accessTokenExpiration = createdWhen + _options.AccessTokenLifetime;
+            var refreshTokenExpiration = createdWhen + _options.RefreshTokenLifetime;
+            var authenticationTime = request.AuthenticationTime.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
 
             var client = request.Client;
             var audience = client.Id;
@@ -136,9 +137,9 @@ namespace MMS.IdentityManagement.Api.Services
                 Issuer = issuer,
                 Audience = audience,
                 Subject = subject,
-                IssuedAt = issuedAt,
-                NotBefore = issuedAt,
-                Expires = expires,
+                IssuedAt = createdWhen.UtcDateTime,
+                NotBefore = createdWhen.UtcDateTime,
+                Expires = accessTokenExpiration.UtcDateTime,
                 SigningCredentials = _options.SigningCredentials,
             };
 
@@ -147,10 +148,10 @@ namespace MMS.IdentityManagement.Api.Services
 
             var result = new CreateTokenResult
             {
-                Token = token,
+                AccessToken = token,
                 Subject = subject,
                 CreatedWhen = createdWhen,
-                ExpiresWhen = expiresWhen,
+                ExpiresWhen = accessTokenExpiration,
             };
             return Task.FromResult(result);
         }
@@ -187,6 +188,9 @@ namespace MMS.IdentityManagement.Api.Services
         }
 
     }
+
+    // MaxInactiveTime
+    // MaxSessionAge
 
     public class CreateRefreshTokenRequest
     {

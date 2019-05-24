@@ -6,7 +6,9 @@ namespace MMS.IdentityManagement.Api.Models
 {
     public class CreateTokenResult : CommonResult
     {
-        public string Token { get; set; }
+        public string AccessToken { get; set; }
+
+        public string RefreshToken { get; set; }
 
         public ClaimsIdentity Subject { get; set; }
 

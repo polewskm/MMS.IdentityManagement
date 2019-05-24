@@ -11,7 +11,9 @@ namespace MMS.IdentityManagement.Api.Models
 
         public string IdentityProvider { get; set; } = "MoMI";
 
-        public TimeSpan TokenLifetime { get; set; }
+        public TimeSpan AccessTokenLifetime { get; set; } = TimeSpan.FromHours(1.0);
+
+        public TimeSpan RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(30);
 
         public SigningCredentials SigningCredentials { get; set; }
 

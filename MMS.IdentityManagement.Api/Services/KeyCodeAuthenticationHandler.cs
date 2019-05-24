@@ -52,7 +52,6 @@ namespace MMS.IdentityManagement.Api.Services
 
             var createTokenRequest = new CreateTokenRequest
             {
-                //TokenType = TokenTypes.AccessToken,
                 AuthenticationType = AuthenticationTypes.KeyCode,
                 AuthenticationTime = _systemClock.UtcNow,
                 Client = clientValidationResult.Client,
@@ -66,9 +65,8 @@ namespace MMS.IdentityManagement.Api.Services
 
             var result = new KeyCodeAuthenticationResult
             {
-                IdentityToken = createTokenResult.Token,
-                AccessToken = createTokenResult.Token,
                 TokenType = TokenTypes.BearerToken,
+                AccessToken = createTokenResult.AccessToken,
                 AccessTokenExpiresWhen = createTokenResult.ExpiresWhen,
             };
 
