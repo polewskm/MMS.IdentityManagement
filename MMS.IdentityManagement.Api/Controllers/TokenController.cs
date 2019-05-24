@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MMS.IdentityManagement.Api.Extensions;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.Services;
 using MMS.IdentityManagement.Requests;
@@ -13,7 +14,7 @@ namespace MMS.IdentityManagement.Api.Controllers
     // POST /api/v1/tokens/keycode
     // POST /api/v1/tokens/refresh
 
-    [Route("api/v1/token")]
+    [Route("api/v1/tokens")]
     [ApiController]
     public class TokenController : ControllerBase
     {

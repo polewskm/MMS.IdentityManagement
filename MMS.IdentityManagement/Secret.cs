@@ -8,8 +8,8 @@ namespace MMS.IdentityManagement
 
         public string Type { get; set; }
 
-        public DateTimeOffset Created { get; set; }
+        public DateTimeOffset CreatedWhen { get; set; }
 
-        public DateTimeOffset? Expiration { get; set; }
+        public DateTimeOffset? ExpiresWhen { get; set; }
     }
 }

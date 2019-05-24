@@ -9,10 +9,13 @@ namespace MMS.IdentityManagement.Requests
         [JsonProperty("token_type")]
         public string TokenType { get; set; }
 
+        [JsonProperty("id_token")]
+        public string IdentityToken { get; set; }
+
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }
 
-        [JsonProperty("expires_in")]
+        [JsonProperty("expires_in", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         private long? AccessTokenExpiresIn
         {
             get => AccessTokenExpiresWhen?.ToUnixTimeSeconds();
@@ -22,7 +25,7 @@ namespace MMS.IdentityManagement.Requests
         [JsonIgnore]
         public DateTimeOffset? AccessTokenExpiresWhen { get; set; }
 
-        [JsonProperty("refresh_token")]
+        [JsonProperty("refresh_token", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string RefreshToken { get; set; }
     }
 }

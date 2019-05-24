@@ -66,8 +66,10 @@ namespace MMS.IdentityManagement.Api.Services
             var result = new KeyCodeAuthenticationResult
             {
                 TokenType = TokenTypes.BearerToken,
+                IdentityToken = createTokenResult.AccessToken,
                 AccessToken = createTokenResult.AccessToken,
-                AccessTokenExpiresWhen = createTokenResult.ExpiresWhen,
+                AccessTokenExpiresWhen = createTokenResult.AccessTokenExpiresWhen,
+                RefreshToken = createTokenResult.RefreshToken,
             };
 
             return result;

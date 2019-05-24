@@ -21,10 +21,6 @@ namespace MMS.IdentityManagement
 
         public bool Disabled { get; set; }
 
-        public DateTimeOffset Registered { get; set; }
-
-        public DateTimeOffset? Expiration { get; set; }
-
         public bool RequireSecret { get; set; } = true;
 
         public ICollection<Secret> Secrets { get; set; } = new HashSet<Secret>();

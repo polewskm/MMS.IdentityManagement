@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MMS.IdentityManagement.Validation;
 
-namespace MMS.IdentityManagement.Api.Models
+namespace MMS.IdentityManagement.Api.Extensions
 {
     public static class CommonResultExtensions
     {

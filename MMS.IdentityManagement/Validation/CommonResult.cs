@@ -5,10 +5,10 @@ namespace MMS.IdentityManagement.Validation
 {
     public class CommonResult
     {
-        [JsonProperty("Error", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         private string _error;
 
-        [JsonProperty("ErrorDescription", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("error_description", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         private string _errorDescription;
 
         [JsonIgnore]
@@ -28,7 +28,7 @@ namespace MMS.IdentityManagement.Validation
             set => _errorDescription = value;
         }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonIgnore]
         public Exception Exception { get; set; }
     }
 }

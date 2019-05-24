@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.IdentityModel.Tokens;
 
-namespace MMS.IdentityManagement.Api.Models
+namespace MMS.IdentityManagement.Api.Options
 {
     public class TokenOptions
     {

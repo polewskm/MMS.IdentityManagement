@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MMS.IdentityManagement.Api.Models;
+using MMS.IdentityManagement.Api.Options;
 using MMS.IdentityManagement.Claims;
-using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Services
 {
@@ -148,10 +148,11 @@ namespace MMS.IdentityManagement.Api.Services
 
             var result = new CreateTokenResult
             {
-                AccessToken = token,
                 Subject = subject,
                 CreatedWhen = createdWhen,
-                ExpiresWhen = accessTokenExpiration,
+                AccessToken = token,
+                AccessTokenExpiresWhen = accessTokenExpiration,
+                RefreshToken = null, // TODO
             };
             return Task.FromResult(result);
         }
@@ -177,33 +178,25 @@ namespace MMS.IdentityManagement.Api.Services
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
-
-            var result = new TokenValidationResult
+            TokenValidationResult result;
+            try
             {
-                Principal = principal,
-                SecurityToken = securityToken,
-            };
+                var principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
+
+                result = new TokenValidationResult
+                {
+                    Principal = principal,
+                };
+            }
+            catch (SecurityTokenValidationException exception)
+            {
+                result = new TokenValidationResult
+                {
+                    Exception = exception,
+                };
+            }
             return Task.FromResult(result);
         }
 
     }
-
-    // MaxInactiveTime
-    // MaxSessionAge
-
-    public class CreateRefreshTokenRequest
-    {
-        public ClaimsIdentity Subject { get; set; }
-    }
-
-    public class CreateRefreshTokenResult : CommonResult
-    {
-        public string Token { get; set; }
-    }
-
-    public interface IRefreshTokenRepository
-    {
-    }
-
 }
