@@ -2,6 +2,8 @@
 {
     public class SecretProtectorBCrypt : ISecretProtector
     {
+        public string CipherType => CipherTypes.BCrypt;
+
         public virtual string Protect(string plainText)
         {
             return BCrypt.Net.BCrypt.HashPassword(plainText);

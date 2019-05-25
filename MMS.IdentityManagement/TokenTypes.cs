@@ -1,4 +1,6 @@
-﻿namespace MMS.IdentityManagement
+﻿using System.ComponentModel;
+
+namespace MMS.IdentityManagement
 {
     public static class TokenTypes
     {

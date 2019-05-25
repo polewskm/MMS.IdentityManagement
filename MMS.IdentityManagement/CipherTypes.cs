@@ -8,6 +8,7 @@
         public const string Argon2 = "argon2";
         public const string Pbkdf2 = "pbkdf2";
         public const string BCrypt = "bcrypt";
+        public const string Hmac256 = "hmac256";
 
         // Iterations = 4
         // MemorySize = 64 * 1024

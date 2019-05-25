@@ -1,24 +1,40 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Options;
 
 namespace MMS.IdentityManagement.Api.SecretProtectors
 {
+    public class SecretProtectorHmac256Options
+    {
+        public byte[] Key { get; set; }
+
+        public int SaltSize { get; set; }
+    }
+
     public class SecretProtectorHmac256 : ISecretProtector
     {
+        private readonly SecretProtectorHmac256Options _options;
+
+        public SecretProtectorHmac256(IOptions<SecretProtectorHmac256Options> options)
+        {
+            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        }
+
         // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Password_Storage_Cheat_Sheet.md
 
         // $hmac$256${salt}${combined_hash}
 
+        public string CipherType => CipherTypes.Hmac256;
+
         public virtual string Protect(string plainText)
         {
-            var keyBytes = Array.Empty<byte>(); // TODO
             var textBytes = Encoding.UTF7.GetBytes(plainText);
 
             using (var rng = RandomNumberGenerator.Create())
-            using (var hasher = new HMACSHA256(keyBytes))
+            using (var hasher = new HMACSHA256(_options.Key))
             {
-                var saltBytes = new byte[32];
+                var saltBytes = new byte[_options.SaltSize];
                 rng.GetNonZeroBytes(saltBytes);
 
                 var combinedBytes = new byte[saltBytes.Length + textBytes.Length];
@@ -46,13 +62,12 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
             var saltBase64 = parts[2];
             var expectedBase64 = parts[3];
 
-            var keyBytes = Array.Empty<byte>();
             var textBytes = Encoding.UTF7.GetBytes(plainText);
 
             var saltBytes = Convert.FromBase64String(saltBase64);
             var expectedBytes = Convert.FromBase64String(expectedBase64);
 
-            using (var hasher = new HMACSHA256(keyBytes))
+            using (var hasher = new HMACSHA256(_options.Key))
             {
                 var combinedBytes = new byte[saltBytes.Length + textBytes.Length];
                 Buffer.BlockCopy(saltBytes, 0, combinedBytes, 0, saltBytes.Length);

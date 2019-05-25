@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MMS.IdentityManagement.Api.Extensions;
-using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.Services;
 using MMS.IdentityManagement.Requests;
 

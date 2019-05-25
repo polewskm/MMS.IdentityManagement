@@ -2,6 +2,8 @@
 {
     public class ClientValidationRequest
     {
+        public string AuthenticationType { get; set; }
+
         public string ClientId { get; set; }
 
         public string ClientSecret { get; set; }

@@ -15,6 +15,8 @@ namespace MMS.IdentityManagement.Api.Services
 
     public class KeyCodeAuthenticationHandler : IKeyCodeAuthenticationHandler
     {
+        private static readonly IErrorFactory<KeyCodeAuthenticationResult> ErrorFactory = ErrorFactory<KeyCodeAuthenticationResult>.Instance;
+
         private readonly IClientValidator _clientValidator;
         private readonly IKeyCodeValidator _keyCodeValidator;
         private readonly ITokenService _tokenService;
@@ -32,23 +34,23 @@ namespace MMS.IdentityManagement.Api.Services
         {
             var clientValidationRequest = new ClientValidationRequest
             {
+                AuthenticationType = AuthenticationTypes.KeyCode,
                 ClientId = request.ClientId,
                 ClientSecret = request.ClientSecret,
             };
 
             var clientValidationResult = await _clientValidator.ValidateClientAsync(clientValidationRequest, cancellationToken).ConfigureAwait(false);
             if (!clientValidationResult.Success)
-                return clientValidationResult.AsError<KeyCodeAuthenticationResult>();
+                return ErrorFactory.Clone(clientValidationResult);
 
             var keyCodeValidationRequest = new KeyCodeValidationRequest
             {
-                Client = clientValidationResult.Client,
                 KeyCode = request.KeyCode,
             };
 
             var keyCodeValidationResult = await _keyCodeValidator.ValidateKeyCodeAsync(keyCodeValidationRequest, cancellationToken).ConfigureAwait(false);
             if (!keyCodeValidationResult.Success)
-                return keyCodeValidationResult.AsError<KeyCodeAuthenticationResult>();
+                return ErrorFactory.Clone(keyCodeValidationResult);
 
             var createTokenRequest = new CreateTokenRequest
             {
@@ -61,7 +63,7 @@ namespace MMS.IdentityManagement.Api.Services
 
             var createTokenResult = await _tokenService.CreateTokenAsync(createTokenRequest, cancellationToken).ConfigureAwait(false);
             if (!createTokenResult.Success)
-                return createTokenResult.AsError<KeyCodeAuthenticationResult>();
+                return ErrorFactory.Clone(createTokenResult);
 
             var result = new KeyCodeAuthenticationResult
             {
