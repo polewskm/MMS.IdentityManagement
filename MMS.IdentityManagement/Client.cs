@@ -21,7 +21,7 @@ namespace MMS.IdentityManagement
 
         public bool Disabled { get; set; }
 
-        public bool RequireSecret { get; set; } = true;
+        public bool RequireSecret { get; set; }
 
         public ICollection<Secret> Secrets { get; set; } = new HashSet<Secret>();
 

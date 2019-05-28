@@ -5,36 +5,32 @@ using Microsoft.Extensions.Options;
 
 namespace MMS.IdentityManagement.Api.SecretProtectors
 {
-    public class SecretProtectorHmac256Options
+    public class SecretProtectorHmacSha256Options
     {
         public byte[] Key { get; set; }
 
-        public int SaltSize { get; set; }
+        public int SaltLength { get; set; }
     }
 
-    public class SecretProtectorHmac256 : ISecretProtector
+    public class SecretProtectorHmac256 : SecretProtector
     {
-        private readonly SecretProtectorHmac256Options _options;
+        private readonly SecretProtectorHmacSha256Options _options;
 
-        public SecretProtectorHmac256(IOptions<SecretProtectorHmac256Options> options)
+        public SecretProtectorHmac256(IOptions<SecretProtectorHmacSha256Options> options)
         {
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         }
 
-        // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Password_Storage_Cheat_Sheet.md
+        public override string CipherType => CipherTypes.HmacSha256;
 
-        // $hmac$256${salt}${combined_hash}
-
-        public string CipherType => CipherTypes.Hmac256;
-
-        public virtual string Protect(string plainText)
+        public override string Protect(string plainText)
         {
             var textBytes = Encoding.UTF7.GetBytes(plainText);
 
             using (var rng = RandomNumberGenerator.Create())
             using (var hasher = new HMACSHA256(_options.Key))
             {
-                var saltBytes = new byte[_options.SaltSize];
+                var saltBytes = new byte[_options.SaltLength];
                 rng.GetNonZeroBytes(saltBytes);
 
                 var combinedBytes = new byte[saltBytes.Length + textBytes.Length];
@@ -43,24 +39,22 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
 
                 var hashBytes = hasher.ComputeHash(combinedBytes);
 
-                var saltBase64 = Convert.ToBase64String(saltBytes);
-                var hashBase64 = Convert.ToBase64String(hashBytes);
-
-                return "$hmac$256$" + saltBase64 + "$" + hashBase64;
+                return StringFormat(saltBytes, hashBytes);
             }
         }
 
-        public virtual bool Verify(string plainText, string cipherText)
+        public override bool Verify(string plainText, string cipherText)
         {
             if (plainText == null || string.IsNullOrEmpty(cipherText))
                 return false;
 
+            // $hmac-sha256${salt}${hash}
             var parts = cipherText.Split("$", StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length != 4 || parts[0] != "hmac" || parts[1] != "256")
+            if (parts.Length != 3 || parts[0] != CipherType)
                 return false;
 
-            var saltBase64 = parts[2];
-            var expectedBase64 = parts[3];
+            var saltBase64 = parts[1];
+            var expectedBase64 = parts[2];
 
             var textBytes = Encoding.UTF7.GetBytes(plainText);
 
@@ -75,29 +69,8 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
 
                 var actualBytes = hasher.ComputeHash(combinedBytes);
 
-                return BuffersAreEqual(expectedBytes, actualBytes);
+                return ByteArraysEqual(expectedBytes, actualBytes);
             }
-        }
-
-        private static bool BuffersAreEqual(byte[] buffer1, byte[] buffer2)
-        {
-            if (ReferenceEquals(buffer1, buffer2))
-                return true;
-
-            if (buffer1 == null || buffer2 == null)
-                return false;
-
-            if (buffer1.Length != buffer2.Length)
-                return false;
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            for (var index = 0; index < buffer1.Length; ++index)
-            {
-                if (buffer1[index] != buffer2[index])
-                    return false;
-            }
-            
-            return true;
         }
 
     }

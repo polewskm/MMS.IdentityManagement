@@ -178,22 +178,14 @@ namespace MMS.IdentityManagement.Api.Services
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            TokenValidationResult result;
+            var result = new TokenValidationResult();
             try
             {
-                var principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
-
-                result = new TokenValidationResult
-                {
-                    Principal = principal,
-                };
+                result.Principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
             }
             catch (SecurityTokenValidationException exception)
             {
-                result = new TokenValidationResult
-                {
-                    Exception = exception,
-                };
+                result.Exception = exception;
             }
             return Task.FromResult(result);
         }

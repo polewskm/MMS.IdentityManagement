@@ -18,7 +18,10 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
             if (protectors == null)
                 throw new ArgumentNullException(nameof(protectors));
 
-            _protectors = protectors.ToDictionary(p => p.CipherType, p => p, StringComparer.OrdinalIgnoreCase);
+            _protectors = protectors.ToDictionary(
+                protector => protector.CipherType,
+                protector => protector,
+                StringComparer.OrdinalIgnoreCase);
         }
 
         public virtual ISecretProtector Select(string cipherType)
@@ -26,7 +29,7 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
             if (_protectors.TryGetValue(cipherType, out var protector))
                 return protector;
 
-            throw new InvalidOperationException();
+            throw new KeyNotFoundException();
         }
 
     }

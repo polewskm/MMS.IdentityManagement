@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MMS.IdentityManagement.Api.Extensions;
@@ -26,6 +27,7 @@ namespace MMS.IdentityManagement.Api.Controllers
 
         [HttpPost]
         [Route("keycode")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(KeyCodeAuthenticationResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         public virtual async Task<IActionResult> KeyCode([FromBody, Required] KeyCodeAuthenticationRequest request, CancellationToken cancellationToken = default)
@@ -42,6 +44,7 @@ namespace MMS.IdentityManagement.Api.Controllers
 
         [HttpPost]
         [Route("refresh")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(KeyCodeAuthenticationResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         public virtual IActionResult Refresh([FromBody, Required] TokenRefreshRequest request)
