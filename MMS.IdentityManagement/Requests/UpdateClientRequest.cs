@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
-namespace MMS.IdentityManagement
+namespace MMS.IdentityManagement.Requests
 {
-    public class Client
+    public class UpdateClientRequest
     {
-        public string Id { get; set; }
-
         public bool Disabled { get; set; }
 
         public bool RequireSecret { get; set; }
-
-        [JsonIgnore]
-        public ICollection<Secret> Secrets { get; set; } = new HashSet<Secret>();
 
         public IDictionary<string, string> Tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }

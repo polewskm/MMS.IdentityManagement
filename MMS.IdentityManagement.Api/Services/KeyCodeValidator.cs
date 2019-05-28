@@ -37,8 +37,8 @@ namespace MMS.IdentityManagement.Api.Services
 
             var memberKeyCodeResult = memberKeyCodes.FirstOrDefault(
                 memberKeyCode => _secretProtectorSelector
-                    .Select(memberKeyCode.CipherType)
-                    .Verify(request.KeyCode, memberKeyCode.CipherValue));
+                    .Select(memberKeyCode.Secret.CipherType)
+                    .Verify(request.KeyCode, memberKeyCode.Secret.CipherText));
 
             if (memberKeyCodeResult == null)
                 return ErrorFactory.InvalidGrant("Invalid KeyCode");

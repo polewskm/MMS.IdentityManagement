@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MMS.IdentityManagement
 {
@@ -8,10 +9,12 @@ namespace MMS.IdentityManagement
 
         public string CipherType { get; set; }
 
-        public string CipherValue { get; set; }
+        public string CipherText { get; set; }
 
         public DateTimeOffset CreatedWhen { get; set; }
 
-        public DateTimeOffset? ExpiresWhen { get; set; }
+        public DateTimeOffset UpdatedWhen { get; set; }
+
+        public IDictionary<string, string> Tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 }

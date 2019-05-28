@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using MMS.IdentityManagement.Api.Data;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.SecretProtectors;
@@ -19,13 +18,11 @@ namespace MMS.IdentityManagement.Api.Services
     {
         private static readonly IErrorFactory<ClientValidationResult> ErrorFactory = ErrorFactory<ClientValidationResult>.Instance;
 
-        private readonly ISystemClock _systemClock;
         private readonly IClientRepository _repository;
         private readonly ISecretProtectorSelector _secretProtectorSelector;
 
-        public ClientValidator(ISystemClock systemClock, IClientRepository repository, ISecretProtectorSelector secretProtectorSelector)
+        public ClientValidator(IClientRepository repository, ISecretProtectorSelector secretProtectorSelector)
         {
-            _systemClock = systemClock ?? throw new ArgumentNullException(nameof(systemClock));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _secretProtectorSelector = secretProtectorSelector ?? throw new ArgumentNullException(nameof(secretProtectorSelector));
         }
@@ -50,13 +47,10 @@ namespace MMS.IdentityManagement.Api.Services
 
                 secret = client.Secrets.FirstOrDefault(s => _secretProtectorSelector
                     .Select(s.CipherType)
-                    .Verify(request.ClientSecret, s.CipherValue));
+                    .Verify(request.ClientSecret, s.CipherText));
 
                 if (secret == null)
                     return ErrorFactory.UnauthorizedClient("Invalid client_secret");
-
-                if (secret.ExpiresWhen <= _systemClock.UtcNow)
-                    return ErrorFactory.UnauthorizedClient("Expired client_secret");
             }
 
             var result = new ClientValidationResult

@@ -4,8 +4,6 @@
     {
         public int MemberId { get; set; }
 
-        public string CipherType { get; set; }
-
-        public string CipherValue { get; set; }
+        public Secret Secret { get; set; }
     }
 }
