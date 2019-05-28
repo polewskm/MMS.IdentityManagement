@@ -21,6 +21,10 @@ namespace MMS.IdentityManagement.Api.Services
             ObjectResult result;
             switch (problemDetails.Status)
             {
+                case StatusCodes.Status200OK:
+                    result = new OkObjectResult(problemDetails);
+                    break;
+
                 case StatusCodes.Status400BadRequest:
                     result = new BadRequestObjectResult(problemDetails);
                     break;
