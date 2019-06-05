@@ -21,7 +21,6 @@ namespace MMS.IdentityManagement.Api
 
         public virtual void ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton<ITokenConverter, TokenConverter>();
             services.TryAddSingleton<IClientValidator, ClientValidator>();
             services.TryAddSingleton<IKeyCodeValidator, KeyCodeValidator>();
             services.TryAddSingleton<IKeyCodeAuthenticationHandler, KeyCodeAuthenticationHandler>();
