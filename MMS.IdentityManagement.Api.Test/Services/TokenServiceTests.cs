@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Tokens;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.Options;
 using MMS.IdentityManagement.Api.Services;
@@ -26,6 +28,12 @@ namespace MMS.IdentityManagement.Api.Test.Services
 
             var tokenOptions = new TokenOptions
             {
+                Issuer = "test_isu",
+                IdentityProvider = "test_idp",
+                AccessTokenLifetime = TimeSpan.FromMinutes(2.0),
+                RefreshTokenLifetime = TimeSpan.FromMinutes(3.0),
+
+                SigningCredentials = new X509SigningCredentials(new X509Certificate2())
             };
             var tokenOptionsAccessor = Microsoft.Extensions.Options.Options.Create(tokenOptions);
 
@@ -125,6 +133,8 @@ namespace MMS.IdentityManagement.Api.Test.Services
 
             Assert.Equal(now, result.CreatedWhen);
             Assert.Equal(now + tokenOptions.AccessTokenLifetime, result.AccessTokenExpiresWhen);
+
+            mockSystemClock.Verify();
         }
 
     }
