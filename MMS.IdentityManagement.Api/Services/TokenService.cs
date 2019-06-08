@@ -72,6 +72,7 @@ namespace MMS.IdentityManagement.Api.Services
                     [IdentityClaimTypes.Nonce] = TokenClaimTypes.Nonce
                 }
             };
+
             return handler;
         }
 
@@ -113,7 +114,7 @@ namespace MMS.IdentityManagement.Api.Services
             AddClaim(IdentityClaimTypes.DisplayName, member.DisplayName);
             AddClaim(IdentityClaimTypes.FirstName, member.FirstName);
             AddClaim(IdentityClaimTypes.LastName, member.LastName);
-            AddClaim(IdentityClaimTypes.EmailAddress, member.EmailAddress, ClaimValueTypes.Email);
+            AddClaim(IdentityClaimTypes.EmailAddress, member.EmailAddress);
             AddClaim(IdentityClaimTypes.PhoneNumber, member.PhoneNumber);
             AddClaim(IdentityClaimTypes.MemberSince, memberSince, ClaimValueTypes.Integer);
             AddClaim(IdentityClaimTypes.RenewalDue, renewalDue, ClaimValueTypes.Integer);
@@ -174,19 +175,50 @@ namespace MMS.IdentityManagement.Api.Services
                 ValidIssuer = _options.Issuer,
                 ValidAudiences = request.ValidAudiences,
                 IssuerSigningKey = _options.SigningValidationKey,
+
+                AuthenticationType = request.AuthenticationType,
             };
+
+            if (request.ClockSkew.HasValue)
+                validationParameters.ClockSkew = request.ClockSkew.Value;
 
             cancellationToken.ThrowIfCancellationRequested();
 
             var result = new TokenValidationResult();
             try
             {
-                result.Principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
+                result.Principal =
+                    _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
             }
-            catch (SecurityTokenValidationException exception)
+            catch (ArgumentException exception)
             {
                 result.Exception = exception;
+                result.Error = ErrorCodes.InvalidGrant;
+                result.ErrorDescription = exception.Message;
             }
+            catch (SecurityTokenExpiredException)
+            {
+                result.Error = ErrorCodes.ExpiredToken;
+                result.ErrorDescription = "Lifetime validation failed.";
+            }
+            catch (SecurityTokenInvalidAudienceException)
+            {
+                result.Error = ErrorCodes.InvalidGrant;
+                result.ErrorDescription = "Audience validation failed.";
+            }
+
+            // SecurityTokenException
+            // SecurityTokenValidationException
+            // SecurityTokenExpiredException
+            // SecurityTokenInvalidIssuerException
+            // SecurityTokenInvalidLifetimeException
+            // SecurityTokenInvalidSignatureException
+            // SecurityTokenInvalidSigningKeyException
+            // SecurityTokenNoExpirationException
+            // SecurityTokenNotYetValidException
+            // SecurityTokenReplayAddFailedException
+            // SecurityTokenReplayDetectedException
+
             return Task.FromResult(result);
         }
 
