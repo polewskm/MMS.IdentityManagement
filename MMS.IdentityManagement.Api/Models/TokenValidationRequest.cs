@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MMS.IdentityManagement.Api.Models
 {
@@ -10,7 +9,5 @@ namespace MMS.IdentityManagement.Api.Models
         public string AuthenticationType { get; set; }
 
         public IEnumerable<string> ValidAudiences { get; set; }
-
-        public TimeSpan? ClockSkew { get; set; }
     }
 }

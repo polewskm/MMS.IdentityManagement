@@ -7,6 +7,8 @@ namespace MMS.IdentityManagement.Validation
     {
         T Clone(CommonResult other);
 
+        T Error(string error, string description, Exception exception);
+
         T Error(string error, string description);
 
         T Error(string error, Exception exception);
@@ -25,11 +27,16 @@ namespace MMS.IdentityManagement.Validation
             if (other.Success)
                 throw new InvalidOperationException();
 
+            return Error(other.Error, other.ErrorDescription, other.Exception);
+        }
+
+        public virtual T Error(string error, string description, Exception exception)
+        {
             return new T
             {
-                Error = other.Error,
-                ErrorDescription = other.ErrorDescription,
-                Exception = other.Exception,
+                Error = error,
+                ErrorDescription = description,
+                Exception = exception,
             };
         }
 

@@ -248,6 +248,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
         public async Task ValidateTokenAsync_GivenExpiredToken()
         {
             _tokenOptions.AccessTokenLifetime = TimeSpan.FromSeconds(1);
+            _tokenOptions.ClockSkew = TimeSpan.Zero;
 
             var createTokenResult = await CreateTokenAsync().ConfigureAwait(false);
 
@@ -258,7 +259,6 @@ namespace MMS.IdentityManagement.Api.Test.Services
                 Token = createTokenResult.AccessToken,
                 AuthenticationType = _createTokenRequest.AuthenticationType,
                 ValidAudiences = new[] { _createTokenRequest.Client.Id },
-                ClockSkew = TimeSpan.Zero,
             };
 
             var tokenValidationResult = await _tokenService.ValidateTokenAsync(tokenValidationRequest).ConfigureAwait(false);
@@ -266,7 +266,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             Assert.False(tokenValidationResult.Success);
 
             Assert.Null(tokenValidationResult.Principal);
-            Assert.Null(tokenValidationResult.Exception);
+            Assert.NotNull(tokenValidationResult.Exception);
             Assert.Equal(ErrorCodes.ExpiredToken, tokenValidationResult.Error);
             Assert.Equal("Lifetime validation failed.", tokenValidationResult.ErrorDescription);
         }
@@ -288,9 +288,9 @@ namespace MMS.IdentityManagement.Api.Test.Services
             Assert.False(tokenValidationResult.Success);
 
             Assert.Null(tokenValidationResult.Principal);
-            Assert.Null(tokenValidationResult.Exception);
+            Assert.NotNull(tokenValidationResult.Exception);
             Assert.Equal(ErrorCodes.InvalidGrant, tokenValidationResult.Error);
-            Assert.Equal("Audience validation failed.", tokenValidationResult.ErrorDescription);
+            Assert.StartsWith("IDX10214: Audience validation failed.", tokenValidationResult.ErrorDescription);
         }
 
     }

@@ -175,49 +175,30 @@ namespace MMS.IdentityManagement.Api.Services
                 ValidIssuer = _options.Issuer,
                 ValidAudiences = request.ValidAudiences,
                 IssuerSigningKey = _options.SigningValidationKey,
+                ClockSkew = _options.ClockSkew ?? TokenValidationParameters.DefaultClockSkew,
 
                 AuthenticationType = request.AuthenticationType,
             };
-
-            if (request.ClockSkew.HasValue)
-                validationParameters.ClockSkew = request.ClockSkew.Value;
 
             cancellationToken.ThrowIfCancellationRequested();
 
             var result = new TokenValidationResult();
             try
             {
-                result.Principal =
-                    _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
+                result.Principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
             }
-            catch (ArgumentException exception)
-            {
-                result.Exception = exception;
-                result.Error = ErrorCodes.InvalidGrant;
-                result.ErrorDescription = exception.Message;
-            }
-            catch (SecurityTokenExpiredException)
+            catch (SecurityTokenExpiredException exception)
             {
                 result.Error = ErrorCodes.ExpiredToken;
                 result.ErrorDescription = "Lifetime validation failed.";
+                result.Exception = exception;
             }
-            catch (SecurityTokenInvalidAudienceException)
+            catch (Exception exception)
             {
                 result.Error = ErrorCodes.InvalidGrant;
-                result.ErrorDescription = "Audience validation failed.";
+                result.ErrorDescription = exception.Message;
+                result.Exception = exception;
             }
-
-            // SecurityTokenException
-            // SecurityTokenValidationException
-            // SecurityTokenExpiredException
-            // SecurityTokenInvalidIssuerException
-            // SecurityTokenInvalidLifetimeException
-            // SecurityTokenInvalidSignatureException
-            // SecurityTokenInvalidSigningKeyException
-            // SecurityTokenNoExpirationException
-            // SecurityTokenNotYetValidException
-            // SecurityTokenReplayAddFailedException
-            // SecurityTokenReplayDetectedException
 
             return Task.FromResult(result);
         }

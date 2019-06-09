@@ -15,6 +15,8 @@ namespace MMS.IdentityManagement.Api.Options
 
         public TimeSpan RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(30);
 
+        public TimeSpan? ClockSkew { get; set; }
+
         public SigningCredentials SigningCredentials { get; set; }
 
         public SecurityKey SigningValidationKey
