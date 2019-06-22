@@ -9,7 +9,7 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
     {
         public byte[] Key { get; set; }
 
-        public int SaltLength { get; set; }
+        public int SaltLength { get; set; } = 128 / 8; // default 16 bytes
     }
 
     public class SecretProtectorHmac256 : SecretProtector
@@ -28,18 +28,27 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
             var textBytes = Encoding.UTF7.GetBytes(plainText);
 
             using (var rng = RandomNumberGenerator.Create())
-            using (var hasher = new HMACSHA256(_options.Key))
             {
-                var saltBytes = new byte[_options.SaltLength];
-                rng.GetNonZeroBytes(saltBytes);
+                var key = _options.Key;
+                if (key == null)
+                {
+                    key = new byte[64];
+                    rng.GetBytes(key);
+                }
 
-                var combinedBytes = new byte[saltBytes.Length + textBytes.Length];
-                Buffer.BlockCopy(saltBytes, 0, combinedBytes, 0, saltBytes.Length);
-                Buffer.BlockCopy(textBytes, 0, combinedBytes, saltBytes.Length, textBytes.Length);
+                using (var hasher = new HMACSHA256(key))
+                {
+                    var saltBytes = new byte[_options.SaltLength];
+                    rng.GetNonZeroBytes(saltBytes);
 
-                var hashBytes = hasher.ComputeHash(combinedBytes);
+                    var combinedBytes = new byte[saltBytes.Length + textBytes.Length];
+                    Buffer.BlockCopy(saltBytes, 0, combinedBytes, 0, saltBytes.Length);
+                    Buffer.BlockCopy(textBytes, 0, combinedBytes, saltBytes.Length, textBytes.Length);
 
-                return StringFormat(saltBytes, hashBytes);
+                    var hashBytes = hasher.ComputeHash(combinedBytes);
+
+                    return StringFormat(saltBytes, hashBytes);
+                }
             }
         }
 

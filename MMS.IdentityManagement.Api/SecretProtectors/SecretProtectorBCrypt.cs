@@ -1,4 +1,6 @@
-﻿namespace MMS.IdentityManagement.Api.SecretProtectors
+﻿using BCrypt.Net;
+
+namespace MMS.IdentityManagement.Api.SecretProtectors
 {
     public class SecretProtectorBCrypt : ISecretProtector
     {
@@ -11,7 +13,14 @@
 
         public virtual bool Verify(string plainText, string cipherText)
         {
-            return BCrypt.Net.BCrypt.Verify(plainText, cipherText);
+            try
+            {
+                return BCrypt.Net.BCrypt.Verify(plainText, cipherText);
+            }
+            catch (SaltParseException)
+            {
+                return false;
+            }
         }
 
     }

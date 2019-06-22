@@ -32,7 +32,7 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
             using (var rng = RandomNumberGenerator.Create())
             {
                 var saltBytes = new byte[_options.SaltLength];
-                rng.GetNonZeroBytes(saltBytes);
+                rng.GetBytes(saltBytes);
 
                 const KeyDerivationPrf prf = KeyDerivationPrf.HMACSHA256;
                 var hashBytes = KeyDerivation.Pbkdf2(plainText, saltBytes, prf, _options.IterationCount, _options.OutputLength);

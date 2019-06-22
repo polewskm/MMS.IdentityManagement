@@ -71,18 +71,18 @@ namespace MMS.IdentityManagement.Api.SecretProtectors
             return builder.ToString();
         }
 
-        protected static bool ByteArraysEqual(byte[] buffer1, byte[] buffer2)
+        protected static bool ByteArraysEqual(byte[] array1, byte[] array2)
         {
-            if (ReferenceEquals(buffer1, buffer2))
+            if (ReferenceEquals(array1, array2))
                 return true;
 
-            if (buffer1 == null || buffer2 == null || buffer1.Length != buffer2.Length)
+            if (array1 == null || array2 == null || array1.Length != array2.Length)
                 return false;
 
             // ReSharper disable once LoopCanBeConvertedToQuery
-            for (var index = 0; index < buffer1.Length; ++index)
+            for (var index = 0; index < array1.Length; ++index)
             {
-                if (buffer1[index] != buffer2[index])
+                if (array1[index] != array2[index])
                     return false;
             }
 
