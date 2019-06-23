@@ -7,9 +7,7 @@ namespace MMS.IdentityManagement.Api.Options
     {
         private SecurityKey _signingValidationKey;
 
-        public string Issuer { get; set; } = "urn:milwaukeemakerspace.org";
-
-        public string IdentityProvider { get; set; } = "MoMI";
+        public string IdentityProvider { get; set; } = "MakerIdMgmt";
 
         public TimeSpan AccessTokenLifetime { get; set; } = TimeSpan.FromHours(1.0);
 

@@ -6,7 +6,7 @@ namespace MMS.IdentityManagement.Api.Models
 {
     public class CreateTokenResult : CommonResult
     {
-        public ClaimsIdentity Subject { get; set; }
+        public ClaimsIdentity Identity { get; set; }
 
         public DateTimeOffset CreatedWhen { get; set; }
 
@@ -15,5 +15,7 @@ namespace MMS.IdentityManagement.Api.Models
         public DateTimeOffset AccessTokenExpiresWhen { get; set; }
 
         public string RefreshToken { get; set; }
+
+        public DateTimeOffset RefreshTokenExpiresWhen { get; set; }
     }
 }

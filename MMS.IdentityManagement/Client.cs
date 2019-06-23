@@ -15,6 +15,6 @@ namespace MMS.IdentityManagement
         [JsonIgnore]
         public ICollection<Secret> Secrets { get; set; } = new HashSet<Secret>();
 
-        public IDictionary<string, string> Tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<string, string> Tags { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 }

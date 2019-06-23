@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Security.Claims;
 
 namespace MMS.IdentityManagement.Claims
@@ -89,18 +88,18 @@ namespace MMS.IdentityManagement.Claims
             return identity.FindFirst(IdentityClaimTypes.PhoneNumber)?.Value;
         }
 
-        public static DateTimeOffset? GetMemberSince(this ClaimsIdentity identity)
+        public static DateTimeOffset? GetMembershipCreatedWhen(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return ParseFirst(identity, IdentityClaimTypes.MemberSince, TryParseUnixTimeSeconds);
+            return ParseFirst(identity, IdentityClaimTypes.MembershipCreatedWhen, TryParseUnixTimeSeconds);
         }
 
-        public static DateTimeOffset? GetRenewalDue(this ClaimsIdentity identity)
+        public static DateTimeOffset? GetMembershipExpiresWhen(this ClaimsIdentity identity)
         {
             NullGuard(identity);
 
-            return ParseFirst(identity, IdentityClaimTypes.RenewalDue, TryParseUnixTimeSeconds);
+            return ParseFirst(identity, IdentityClaimTypes.MembershipExpiresWhen, TryParseUnixTimeSeconds);
         }
 
         public static bool IsSystemAdministrator(this ClaimsIdentity identity)
@@ -114,34 +113,7 @@ namespace MMS.IdentityManagement.Claims
         {
             NullGuard(identity);
 
-            var claim = identity.FindFirst(IdentityClaimTypes.BoardMemberType);
-            return claim != null && !string.IsNullOrEmpty(claim.Value) && Enum.IsDefined(typeof(BoardMemberType), claim.Value);
-        }
-
-        public static BoardMemberType GetBoardMemberType(this ClaimsIdentity identity)
-        {
-            NullGuard(identity);
-
-            var claim = identity.FindFirst(IdentityClaimTypes.BoardMemberType);
-            if (claim != null && !string.IsNullOrEmpty(claim.Value) && Enum.TryParse(claim.Value, out BoardMemberType type))
-                return type;
-
-            return BoardMemberType.None;
-        }
-
-        public static bool IsChampion(this ClaimsIdentity identity)
-        {
-            NullGuard(identity);
-
-            var claim = identity.FindFirst(IdentityClaimTypes.ChampionArea);
-            return claim != null;
-        }
-
-        public static string[] GetChampionAreas(this ClaimsIdentity identity)
-        {
-            NullGuard(identity);
-
-            return identity.FindAll(IdentityClaimTypes.ChampionArea).Select(c => c.Value).ToArray();
+            return identity.HasClaim(IdentityClaimTypes.Role, MemberRoles.BoardMember);
         }
 
     }

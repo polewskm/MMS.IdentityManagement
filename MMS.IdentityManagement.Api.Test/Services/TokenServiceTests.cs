@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
+using MMS.IdentityManagement.Api.Extensions;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.Options;
 using MMS.IdentityManagement.Api.Services;
@@ -17,7 +18,6 @@ namespace MMS.IdentityManagement.Api.Test.Services
 {
     public sealed class TokenServiceTests : IDisposable
     {
-        private const string TestIssuer = "test_iss";
         private const string TestIdentityProvider = "test_idp";
 
         private readonly DateTimeOffset _now = DateTimeOffset.Now;
@@ -62,10 +62,8 @@ namespace MMS.IdentityManagement.Api.Test.Services
                     EmailAddress = Guid.NewGuid().ToString("N"),
                     PhoneNumber = Guid.NewGuid().ToString("N"),
 
-                    MemberSince = _now.AddMonths(-1),
-                    RenewalDue = _now.AddMonths(1),
-
-                    BoardMemberType = BoardMemberType.MemberAtLarge,
+                    MembershipCreatedWhen = _now.AddMonths(-1),
+                    MembershipExpiresWhen = _now.AddMonths(1),
 
                     Roles = new[]
                     {
@@ -73,12 +71,6 @@ namespace MMS.IdentityManagement.Api.Test.Services
                         "test_role2",
                         "test_role3",
                     },
-                    ChampionAreas = new[]
-                    {
-                        "test_area1",
-                        "test_area2",
-                        "test_area3",
-                    }
                 },
 
                 AuthenticationType = Guid.NewGuid().ToString("N"),
@@ -94,7 +86,6 @@ namespace MMS.IdentityManagement.Api.Test.Services
 
             _tokenOptions = new TokenOptions
             {
-                Issuer = TestIssuer,
                 IdentityProvider = TestIdentityProvider,
                 AccessTokenLifetime = TimeSpan.FromMinutes(2.0),
                 RefreshTokenLifetime = TimeSpan.FromMinutes(3.0),
@@ -158,32 +149,44 @@ namespace MMS.IdentityManagement.Api.Test.Services
             var member = _createTokenRequest.Member;
 
             Assert.Equal(_createTokenRequest.AuthenticationType, identity.AuthenticationType);
+
+            Assert.Equal(member.MemberId, identity.GetMemberId());
             Assert.Equal(member.MemberId.ToString(), identity.FindFirst(IdentityClaimTypes.MemberId)?.Value);
             Assert.Equal(ClaimValueTypes.Integer, identity.FindFirst(IdentityClaimTypes.MemberId)?.ValueType);
+
+            Assert.Equal(member.DisplayName, identity.GetDisplayName());
             Assert.Equal(member.DisplayName, identity.FindFirst(IdentityClaimTypes.DisplayName)?.Value);
+
+            Assert.Equal(member.FirstName, identity.GetFirstName());
             Assert.Equal(member.FirstName, identity.FindFirst(IdentityClaimTypes.FirstName)?.Value);
+
+            Assert.Equal(member.LastName, identity.GetLastName());
             Assert.Equal(member.LastName, identity.FindFirst(IdentityClaimTypes.LastName)?.Value);
+
+            Assert.Equal(member.EmailAddress, identity.GetEmailAddress());
             Assert.Equal(member.EmailAddress, identity.FindFirst(IdentityClaimTypes.EmailAddress)?.Value);
+
+            Assert.Equal(member.PhoneNumber, identity.GetPhoneNumber());
             Assert.Equal(member.PhoneNumber, identity.FindFirst(IdentityClaimTypes.PhoneNumber)?.Value);
-            Assert.Equal(member.MemberSince.ToUnixTimeSeconds().ToString(), identity.FindFirst(IdentityClaimTypes.MemberSince)?.Value);
-            Assert.Equal(ClaimValueTypes.Integer, identity.FindFirst(IdentityClaimTypes.MemberSince)?.ValueType);
-            Assert.Equal(member.RenewalDue.ToUnixTimeSeconds().ToString(), identity.FindFirst(IdentityClaimTypes.RenewalDue)?.Value);
-            Assert.Equal(ClaimValueTypes.Integer, identity.FindFirst(IdentityClaimTypes.RenewalDue)?.ValueType);
-            Assert.Equal(member.BoardMemberType.ToString(), identity.FindFirst(IdentityClaimTypes.BoardMemberType)?.Value);
+
+            Assert.Equal(member.MembershipCreatedWhen.TruncateMilliseconds(), identity.GetMembershipCreatedWhen());
+            Assert.Equal(member.MembershipCreatedWhen.TruncateMilliseconds().ToUnixTimeSeconds().ToString(), identity.FindFirst(IdentityClaimTypes.MembershipCreatedWhen)?.Value);
+            Assert.Equal(ClaimValueTypes.Integer, identity.FindFirst(IdentityClaimTypes.MembershipCreatedWhen)?.ValueType);
+
+            Assert.Equal(member.MembershipExpiresWhen.TruncateMilliseconds(), identity.GetMembershipExpiresWhen());
+            Assert.Equal(member.MembershipExpiresWhen.TruncateMilliseconds().ToUnixTimeSeconds().ToString(), identity.FindFirst(IdentityClaimTypes.MembershipExpiresWhen)?.Value);
+            Assert.Equal(ClaimValueTypes.Integer, identity.FindFirst(IdentityClaimTypes.MembershipExpiresWhen)?.ValueType);
+
             Assert.Equal(_createTokenRequest.AuthenticationType, identity.FindFirst(IdentityClaimTypes.AuthenticationMethod)?.Value);
+
+            // ReSharper disable once ImpureMethodCallOnReadonlyValueField
+            // false positive
             Assert.Equal(_now.ToUnixTimeSeconds().ToString(), identity.FindFirst(IdentityClaimTypes.AuthenticationTime)?.Value);
             Assert.Equal(ClaimValueTypes.Integer, identity.FindFirst(IdentityClaimTypes.AuthenticationTime)?.ValueType);
-            Assert.Equal(TestIdentityProvider, identity.FindFirst(IdentityClaimTypes.IdentityProvider)?.Value);
-            Assert.Equal(_createTokenRequest.Client.Id, identity.FindFirst(IdentityClaimTypes.ClientId)?.Value);
-            Assert.Equal(_createTokenRequest.Nonce, identity.FindFirst(IdentityClaimTypes.Nonce)?.Value);
 
             Assert.True(identity.HasClaim(IdentityClaimTypes.Role, "test_role1"));
             Assert.True(identity.HasClaim(IdentityClaimTypes.Role, "test_role2"));
             Assert.True(identity.HasClaim(IdentityClaimTypes.Role, "test_role3"));
-
-            Assert.True(identity.HasClaim(IdentityClaimTypes.ChampionArea, "test_area1"));
-            Assert.True(identity.HasClaim(IdentityClaimTypes.ChampionArea, "test_area2"));
-            Assert.True(identity.HasClaim(IdentityClaimTypes.ChampionArea, "test_area3"));
         }
 
         [Fact]
@@ -193,13 +196,14 @@ namespace MMS.IdentityManagement.Api.Test.Services
             Assert.NotNull(createTokenResult);
             Assert.True(createTokenResult.Success);
 
-            AssertIdentity(createTokenResult.Subject);
+            AssertIdentity(createTokenResult.Identity);
 
             Assert.NotNull(createTokenResult.AccessToken);
-            Assert.Null(createTokenResult.RefreshToken); // not implemented yet
+            Assert.Null(createTokenResult.RefreshToken); // TODO: not implemented yet
 
-            Assert.Equal(_now, createTokenResult.CreatedWhen);
-            Assert.Equal(_now + _tokenOptions.AccessTokenLifetime, createTokenResult.AccessTokenExpiresWhen);
+            Assert.Equal(_now.TruncateMilliseconds(), createTokenResult.CreatedWhen);
+            Assert.Equal((_now + _tokenOptions.AccessTokenLifetime).TruncateMilliseconds(), createTokenResult.AccessTokenExpiresWhen);
+            Assert.Equal((_now + _tokenOptions.RefreshTokenLifetime).TruncateMilliseconds(), createTokenResult.RefreshTokenExpiresWhen);
 
             return createTokenResult;
         }

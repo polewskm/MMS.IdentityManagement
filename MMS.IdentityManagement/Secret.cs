@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace MMS.IdentityManagement
 {
@@ -9,12 +10,13 @@ namespace MMS.IdentityManagement
 
         public string CipherType { get; set; }
 
+        [JsonIgnore]
         public string CipherText { get; set; }
 
         public DateTimeOffset CreatedWhen { get; set; }
 
         public DateTimeOffset UpdatedWhen { get; set; }
 
-        public IDictionary<string, string> Tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<string, string> Tags { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 }

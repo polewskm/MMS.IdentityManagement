@@ -13,17 +13,13 @@ namespace MMS.IdentityManagement
 
         public string DisplayName { get; set; }
 
-        public DateTimeOffset MemberSince { get; set; }
-
-        public DateTimeOffset RenewalDue { get; set; }
-
         public string EmailAddress { get; set; }
 
         public string PhoneNumber { get; set; }
 
-        public BoardMemberType BoardMemberType { get; set; }
+        public DateTimeOffset MembershipCreatedWhen { get; set; }
 
-        public ICollection<string> ChampionAreas { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public DateTimeOffset MembershipExpiresWhen { get; set; }
 
         public ICollection<string> Roles { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }

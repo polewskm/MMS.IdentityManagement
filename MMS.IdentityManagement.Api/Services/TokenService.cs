@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MMS.IdentityManagement.Api.Extensions;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.Options;
 using MMS.IdentityManagement.Claims;
@@ -40,16 +41,11 @@ namespace MMS.IdentityManagement.Api.Services
                     [TokenClaimTypes.LastName] = IdentityClaimTypes.LastName,
                     [TokenClaimTypes.EmailAddress] = IdentityClaimTypes.EmailAddress,
                     [TokenClaimTypes.PhoneNumber] = IdentityClaimTypes.PhoneNumber,
-                    [TokenClaimTypes.MemberSince] = IdentityClaimTypes.MemberSince,
-                    [TokenClaimTypes.RenewalDue] = IdentityClaimTypes.RenewalDue,
-                    [TokenClaimTypes.BoardMemberType] = IdentityClaimTypes.BoardMemberType,
-                    [TokenClaimTypes.ChampionArea] = IdentityClaimTypes.ChampionArea,
+                    [TokenClaimTypes.MembershipCreatedWhen] = IdentityClaimTypes.MembershipCreatedWhen,
+                    [TokenClaimTypes.MembershipExpiresWhen] = IdentityClaimTypes.MembershipExpiresWhen,
                     [TokenClaimTypes.Role] = IdentityClaimTypes.Role,
                     [TokenClaimTypes.AuthenticationMethod] = IdentityClaimTypes.AuthenticationMethod,
                     [TokenClaimTypes.AuthenticationTime] = IdentityClaimTypes.AuthenticationTime,
-                    [TokenClaimTypes.IdentityProvider] = IdentityClaimTypes.IdentityProvider,
-                    [TokenClaimTypes.ClientId] = IdentityClaimTypes.ClientId,
-                    [TokenClaimTypes.Nonce] = IdentityClaimTypes.Nonce
                 },
 
                 OutboundClaimTypeMap =
@@ -60,16 +56,11 @@ namespace MMS.IdentityManagement.Api.Services
                     [IdentityClaimTypes.LastName] = TokenClaimTypes.LastName,
                     [IdentityClaimTypes.EmailAddress] = TokenClaimTypes.EmailAddress,
                     [IdentityClaimTypes.PhoneNumber] = TokenClaimTypes.PhoneNumber,
-                    [IdentityClaimTypes.MemberSince] = TokenClaimTypes.MemberSince,
-                    [IdentityClaimTypes.RenewalDue] = TokenClaimTypes.RenewalDue,
-                    [IdentityClaimTypes.BoardMemberType] = TokenClaimTypes.BoardMemberType,
-                    [IdentityClaimTypes.ChampionArea] = TokenClaimTypes.ChampionArea,
+                    [IdentityClaimTypes.MembershipCreatedWhen] = TokenClaimTypes.MembershipCreatedWhen,
+                    [IdentityClaimTypes.MembershipExpiresWhen] = TokenClaimTypes.MembershipExpiresWhen,
                     [IdentityClaimTypes.Role] = TokenClaimTypes.Role,
                     [IdentityClaimTypes.AuthenticationMethod] = TokenClaimTypes.AuthenticationMethod,
                     [IdentityClaimTypes.AuthenticationTime] = TokenClaimTypes.AuthenticationTime,
-                    [IdentityClaimTypes.IdentityProvider] = TokenClaimTypes.IdentityProvider,
-                    [IdentityClaimTypes.ClientId] = TokenClaimTypes.ClientId,
-                    [IdentityClaimTypes.Nonce] = TokenClaimTypes.Nonce
                 }
             };
 
@@ -87,20 +78,19 @@ namespace MMS.IdentityManagement.Api.Services
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var createdWhen = _systemClock.UtcNow;
-            var accessTokenExpiration = createdWhen + _options.AccessTokenLifetime;
-            var refreshTokenExpiration = createdWhen + _options.RefreshTokenLifetime;
-            var authenticationTime = request.AuthenticationTime.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+            var createdWhen = _systemClock.UtcNow.TruncateMilliseconds();
+            var accessTokenExpiresWhen = (createdWhen + _options.AccessTokenLifetime).TruncateMilliseconds();
+            var refreshTokenExpiresWhen = (createdWhen + _options.RefreshTokenLifetime).TruncateMilliseconds();
+            var authenticationTime = request.AuthenticationTime.TruncateMilliseconds().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
 
             var client = request.Client;
             var audience = client.Id;
-            var issuer = _options.Issuer;
+            var issuer = _options.IdentityProvider;
 
             var member = request.Member;
             var memberId = member.MemberId.ToString(CultureInfo.InvariantCulture);
-            var memberSince = member.MemberSince.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-            var renewalDue = member.RenewalDue.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-            var boardMemberType = member.BoardMemberType.ToString();
+            var membershipCreatedWhen = member.MembershipCreatedWhen.TruncateMilliseconds().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+            var membershipExpiresWhen = member.MembershipExpiresWhen.TruncateMilliseconds().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
 
             var claims = new List<Claim>();
 
@@ -116,20 +106,14 @@ namespace MMS.IdentityManagement.Api.Services
             AddClaim(IdentityClaimTypes.LastName, member.LastName);
             AddClaim(IdentityClaimTypes.EmailAddress, member.EmailAddress);
             AddClaim(IdentityClaimTypes.PhoneNumber, member.PhoneNumber);
-            AddClaim(IdentityClaimTypes.MemberSince, memberSince, ClaimValueTypes.Integer);
-            AddClaim(IdentityClaimTypes.RenewalDue, renewalDue, ClaimValueTypes.Integer);
-            AddClaim(IdentityClaimTypes.BoardMemberType, boardMemberType);
-
+            AddClaim(IdentityClaimTypes.MembershipCreatedWhen, membershipCreatedWhen, ClaimValueTypes.Integer);
+            AddClaim(IdentityClaimTypes.MembershipExpiresWhen, membershipExpiresWhen, ClaimValueTypes.Integer);
             AddClaim(IdentityClaimTypes.AuthenticationMethod, request.AuthenticationType);
             AddClaim(IdentityClaimTypes.AuthenticationTime, authenticationTime, ClaimValueTypes.Integer);
-            AddClaim(IdentityClaimTypes.IdentityProvider, _options.IdentityProvider);
-            AddClaim(IdentityClaimTypes.ClientId, client.Id);
-            AddClaim(IdentityClaimTypes.Nonce, request.Nonce);
 
             claims.AddRange(member.Roles.Select(role => new Claim(IdentityClaimTypes.Role, role, ClaimValueTypes.String, issuer)));
-            claims.AddRange(member.ChampionAreas.Select(area => new Claim(IdentityClaimTypes.ChampionArea, area, ClaimValueTypes.String, issuer)));
 
-            var subject = new ClaimsIdentity(claims, request.AuthenticationType);
+            var identity = new ClaimsIdentity(claims, request.AuthenticationType);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -137,10 +121,10 @@ namespace MMS.IdentityManagement.Api.Services
             {
                 Issuer = issuer,
                 Audience = audience,
-                Subject = subject,
+                Subject = identity,
                 IssuedAt = createdWhen.UtcDateTime,
                 NotBefore = createdWhen.UtcDateTime,
-                Expires = accessTokenExpiration.UtcDateTime,
+                Expires = accessTokenExpiresWhen.UtcDateTime,
                 SigningCredentials = _options.SigningCredentials,
             };
 
@@ -149,11 +133,12 @@ namespace MMS.IdentityManagement.Api.Services
 
             var result = new CreateTokenResult
             {
-                Subject = subject,
+                Identity = identity,
                 CreatedWhen = createdWhen,
                 AccessToken = token,
-                AccessTokenExpiresWhen = accessTokenExpiration,
+                AccessTokenExpiresWhen = accessTokenExpiresWhen,
                 RefreshToken = null, // TODO
+                RefreshTokenExpiresWhen = refreshTokenExpiresWhen,
             };
             return Task.FromResult(result);
         }
@@ -172,7 +157,7 @@ namespace MMS.IdentityManagement.Api.Services
                 ValidateLifetime = true,
                 ValidateTokenReplay = false,
 
-                ValidIssuer = _options.Issuer,
+                ValidIssuer = _options.IdentityProvider,
                 ValidAudiences = request.ValidAudiences,
                 IssuerSigningKey = _options.SigningValidationKey,
                 ClockSkew = _options.ClockSkew ?? TokenValidationParameters.DefaultClockSkew,
@@ -185,7 +170,7 @@ namespace MMS.IdentityManagement.Api.Services
             var result = new TokenValidationResult();
             try
             {
-                result.Principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
+                result.Principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out _);
             }
             catch (SecurityTokenExpiredException exception)
             {

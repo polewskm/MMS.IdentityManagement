@@ -154,9 +154,8 @@ namespace MMS.IdentityManagement.Api.Test.Services
                 DisplayName = "John Doe",
                 FirstName = "John",
                 LastName = "Doe",
-                MemberSince = now.AddMonths(-1),
-                RenewalDue = now.AddMonths(1),
-                BoardMemberType = BoardMemberType.None,
+                MembershipCreatedWhen = now.AddMonths(-1),
+                MembershipExpiresWhen = now.AddMonths(1),
             };
             var identity = new ClaimsIdentity("keycode");
             identity.AddClaim(new Claim(IdentityClaimTypes.MemberId, member.MemberId.ToString()));
@@ -204,7 +203,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
                     AccessTokenExpiresWhen = now.AddDays(1),
                     CreatedWhen = now,
                     RefreshToken = "test_refresh_token",
-                    Subject = identity,
+                    Identity = identity,
                 });
 
             _mockSystemClock

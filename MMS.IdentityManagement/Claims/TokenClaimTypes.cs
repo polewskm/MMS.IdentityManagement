@@ -13,17 +13,12 @@
         public const string EmailAddress = "email";
         public const string PhoneNumber = "phone_number";
 
-        public const string MemberSince = "mms_member_since";
-        public const string RenewalDue = "mms_renewal_due";
-        public const string BoardMemberType = "mms_board_member";
-        public const string ChampionArea = "mms_champion_area";
+        public const string MembershipCreatedWhen = "mbr_created";
+        public const string MembershipExpiresWhen = "mbr_expires";
 
         public const string Role = "role";
 
         public const string AuthenticationMethod = "auth_method";
         public const string AuthenticationTime = "auth_time";
-        public const string IdentityProvider = "idp";
-        public const string ClientId = "client_id";
-        public const string Nonce = "nonce";
     }
 }
