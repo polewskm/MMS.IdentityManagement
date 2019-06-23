@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MMS.IdentityManagement.Data;
 
 namespace MMS.IdentityManagement.Api.Services
 {
@@ -14,14 +15,21 @@ namespace MMS.IdentityManagement.Api.Services
 
     public class ClientService : IClientService
     {
-        public virtual Task<IEnumerable<ClientReference>> GetClientsAsync(CancellationToken cancellationToken = default)
+        private readonly IClientRepository _clientRepository;
+
+        public ClientService(IClientRepository clientRepository)
         {
-            throw new NotImplementedException();
+            _clientRepository = clientRepository ?? throw new ArgumentNullException(nameof(clientRepository));
         }
 
-        public virtual Task<Client> GetClientByIdAsync(string clientId, CancellationToken cancellationToken = default)
+        public virtual async Task<IEnumerable<ClientReference>> GetClientsAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await _clientRepository.GetClientsAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        public virtual async Task<Client> GetClientByIdAsync(string clientId, CancellationToken cancellationToken = default)
+        {
+            return await _clientRepository.GetClientByIdAsync(clientId, cancellationToken).ConfigureAwait(false);
         }
 
     }

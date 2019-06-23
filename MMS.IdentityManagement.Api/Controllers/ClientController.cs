@@ -9,7 +9,7 @@ using MMS.IdentityManagement.Api.Services;
 
 namespace MMS.IdentityManagement.Api.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/v1/clients")]
     [ApiController]
     public class ClientController : ControllerBase

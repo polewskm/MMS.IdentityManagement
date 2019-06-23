@@ -67,7 +67,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
 
             var secret = new Secret
             {
-                Id = Guid.NewGuid().ToString("N"),
+                SecretId = Guid.NewGuid().ToString("N"),
                 CipherType = "test",
                 CipherText = Guid.NewGuid().ToString("N"),
                 CreatedWhen = now,
@@ -75,7 +75,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             };
             var client = new Client
             {
-                Id = Guid.NewGuid().ToString("N"),
+                ClientId = Guid.NewGuid().ToString("N"),
                 Disabled = false,
                 RequireSecret = true,
                 Secrets = new[] { secret },
@@ -135,7 +135,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
 
             var secret = new Secret
             {
-                Id = Guid.NewGuid().ToString("N"),
+                SecretId = Guid.NewGuid().ToString("N"),
                 CipherType = "test",
                 CipherText = Guid.NewGuid().ToString("N"),
                 CreatedWhen = now,
@@ -143,7 +143,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             };
             var client = new Client
             {
-                Id = Guid.NewGuid().ToString("N"),
+                ClientId = Guid.NewGuid().ToString("N"),
                 Disabled = false,
                 RequireSecret = true,
                 Secrets = new[] { secret },
@@ -165,7 +165,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
 
             var request = new KeyCodeAuthenticationRequest
             {
-                ClientId = client.Id,
+                ClientId = client.ClientId,
                 ClientSecret = Guid.NewGuid().ToString("N"),
                 KeyCode = Guid.NewGuid().ToString("N"),
             };

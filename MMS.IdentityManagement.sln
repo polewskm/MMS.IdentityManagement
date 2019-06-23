@@ -14,7 +14,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MMS.IdentityManagement.Api", "MMS.IdentityManagement.Api\MMS.IdentityManagement.Api.csproj", "{493C015E-2DFA-4443-82D6-9BD066DFAA9C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMS.IdentityManagement.Api.Test", "MMS.IdentityManagement.Api.Test\MMS.IdentityManagement.Api.Test.csproj", "{71394DC3-D512-4D81-98E0-795D7C136805}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MMS.IdentityManagement.Api.Test", "MMS.IdentityManagement.Api.Test\MMS.IdentityManagement.Api.Test.csproj", "{71394DC3-D512-4D81-98E0-795D7C136805}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMS.IdentityManagement.Data", "MMS.IdentityManagement.Data\MMS.IdentityManagement.Data.csproj", "{FED45C44-FDE4-40C4-AE1C-007D0566FC63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMS.IdentityManagement.Data.EntityFramework", "MMS.IdentityManagement.Data.EntityFramework\MMS.IdentityManagement.Data.EntityFramework.csproj", "{8F73896D-2A9B-41C7-9705-61081C362771}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +38,14 @@ Global
 		{71394DC3-D512-4D81-98E0-795D7C136805}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71394DC3-D512-4D81-98E0-795D7C136805}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71394DC3-D512-4D81-98E0-795D7C136805}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FED45C44-FDE4-40C4-AE1C-007D0566FC63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FED45C44-FDE4-40C4-AE1C-007D0566FC63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FED45C44-FDE4-40C4-AE1C-007D0566FC63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FED45C44-FDE4-40C4-AE1C-007D0566FC63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F73896D-2A9B-41C7-9705-61081C362771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F73896D-2A9B-41C7-9705-61081C362771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F73896D-2A9B-41C7-9705-61081C362771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F73896D-2A9B-41C7-9705-61081C362771}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

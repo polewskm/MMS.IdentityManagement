@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MMS.IdentityManagement.Api.Data;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.SecretProtectors;
 using MMS.IdentityManagement.Api.Services;
+using MMS.IdentityManagement.Data;
 using Moq;
 using Xunit;
 
@@ -90,7 +90,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             var cancellationToken = CancellationToken.None;
             var client = new Client
             {
-                Id = clientId,
+                ClientId = clientId,
                 Disabled = false,
                 RequireSecret = false,
             };
@@ -126,7 +126,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             var cancellationToken = CancellationToken.None;
             var client = new Client
             {
-                Id = clientId,
+                ClientId = clientId,
                 Disabled = true,
                 RequireSecret = false,
             };
@@ -162,7 +162,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             var cancellationToken = CancellationToken.None;
             var client = new Client
             {
-                Id = clientId,
+                ClientId = clientId,
                 Disabled = false,
                 RequireSecret = true,
             };
@@ -199,7 +199,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             var cancellationToken = CancellationToken.None;
             var client = new Client
             {
-                Id = clientId,
+                ClientId = clientId,
                 Disabled = false,
                 RequireSecret = true,
             };
@@ -236,7 +236,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             var cancellationToken = CancellationToken.None;
             var client = new Client
             {
-                Id = clientId,
+                ClientId = clientId,
                 Disabled = false,
                 RequireSecret = true,
             };
@@ -280,7 +280,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
 
             var secret = new Secret
             {
-                Id = "match",
+                SecretId = "match",
                 CipherType = cipherType,
                 CipherText = Guid.NewGuid().ToString("N"),
                 CreatedWhen = now,
@@ -289,14 +289,14 @@ namespace MMS.IdentityManagement.Api.Test.Services
 
             var client = new Client
             {
-                Id = clientId,
+                ClientId = clientId,
                 Disabled = false,
                 RequireSecret = true,
                 Secrets = new[]
                 {
                     new Secret
                     {
-                        Id = "other",
+                        SecretId = "other",
                         CipherType = cipherType,
                         CipherText = Guid.NewGuid().ToString("N"),
                         CreatedWhen = now,

@@ -61,7 +61,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
                 MemberId = 1,
                 Secret = new Secret
                 {
-                    Id = "test",
+                    SecretId = "test",
                     CipherType = cipherType,
                     CipherText = Guid.NewGuid().ToString("N"),
                     CreatedWhen = now,
@@ -121,7 +121,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
                 MemberId = memberId,
                 Secret = new Secret
                 {
-                    Id = "test",
+                    SecretId = "test",
                     CipherType = cipherType,
                     CipherText = Guid.NewGuid().ToString("N"),
                     CreatedWhen = now,
@@ -186,7 +186,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
                 MemberId = memberId,
                 Secret = new Secret
                 {
-                    Id = "test",
+                    SecretId = "test",
                     CipherType = cipherType,
                     CipherText = Guid.NewGuid().ToString("N"),
                     CreatedWhen = now,

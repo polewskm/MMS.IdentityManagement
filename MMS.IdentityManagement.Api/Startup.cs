@@ -4,8 +4,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MMS.IdentityManagement.Api.Data;
 using MMS.IdentityManagement.Api.Infrastructure;
+using MMS.IdentityManagement.Api.SecretProtectors;
 using MMS.IdentityManagement.Api.Services;
+using MMS.IdentityManagement.Data;
+using MMS.IdentityManagement.Data.EntityFramework.Repositories;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace MMS.IdentityManagement.Api
@@ -21,9 +25,21 @@ namespace MMS.IdentityManagement.Api
 
         public virtual void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging();
+
+            services.TryAddSingleton<ISecretProtectorSelector, SecretProtectorSelector>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProtector, SecretProtectorBCrypt>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProtector, SecretProtectorHmac256>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<ISecretProtector, SecretProtectorPbkdf2Sha256>());
+
+            services.TryAddSingleton<ITokenService, TokenService>();
+            services.TryAddSingleton<IClientService, ClientService>();
             services.TryAddSingleton<IClientValidator, ClientValidator>();
             services.TryAddSingleton<IKeyCodeValidator, KeyCodeValidator>();
             services.TryAddSingleton<IKeyCodeAuthenticationHandler, KeyCodeAuthenticationHandler>();
+
+            services.TryAddSingleton<IClientRepository, ClientRepository>();
+            services.TryAddSingleton<IMemberRepository, MemberRepository>();
 
             services
                 .AddMvc()

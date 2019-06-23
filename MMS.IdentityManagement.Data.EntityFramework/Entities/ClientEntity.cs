@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
-namespace MMS.IdentityManagement
+namespace MMS.IdentityManagement.Data.EntityFramework.Entities
 {
-    public class Client
+    public class ClientEntity
     {
+        public int Id { get; set; }
+
         public string ClientId { get; set; }
 
         public bool Disabled { get; set; }
@@ -16,9 +17,8 @@ namespace MMS.IdentityManagement
 
         public DateTimeOffset UpdatedWhen { get; set; }
 
-        [JsonIgnore]
-        public ICollection<Secret> Secrets { get; set; } = new HashSet<Secret>();
+        public List<ClientSecretEntity> Secrets { get; set; }
 
-        public IDictionary<string, string> Tags { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public List<ClientTagEntity> Tags { get; set; }
     }
 }

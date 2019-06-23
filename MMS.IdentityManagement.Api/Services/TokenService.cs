@@ -84,7 +84,7 @@ namespace MMS.IdentityManagement.Api.Services
             var authenticationTime = request.AuthenticationTime.TruncateMilliseconds().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
 
             var client = request.Client;
-            var audience = client.Id;
+            var audience = client.ClientId;
             var issuer = _options.IdentityProvider;
 
             var member = request.Member;

@@ -36,14 +36,14 @@ namespace MMS.IdentityManagement.Api.Test.Services
             {
                 Client = new Client
                 {
-                    Id = "test_client",
+                    ClientId = "test_client",
                     RequireSecret = true,
                     Disabled = false,
                     Secrets = new[]
                     {
                         new Secret
                         {
-                            Id = "test_secret",
+                            SecretId = "test_secret",
                             CipherType = "test_cipher",
                             CipherText = "test_keycode",
                             CreatedWhen = _now,
@@ -217,7 +217,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             {
                 Token = createTokenResult.AccessToken,
                 AuthenticationType = _createTokenRequest.AuthenticationType,
-                ValidAudiences = new[] { _createTokenRequest.Client.Id },
+                ValidAudiences = new[] { _createTokenRequest.Client.ClientId },
             };
 
             var tokenValidationResult = await _tokenService.ValidateTokenAsync(tokenValidationRequest).ConfigureAwait(false);
@@ -235,7 +235,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             {
                 Token = "blah blah",
                 AuthenticationType = _createTokenRequest.AuthenticationType,
-                ValidAudiences = new[] { _createTokenRequest.Client.Id },
+                ValidAudiences = new[] { _createTokenRequest.Client.ClientId },
             };
 
             var tokenValidationResult = await _tokenService.ValidateTokenAsync(tokenValidationRequest).ConfigureAwait(false);
@@ -262,7 +262,7 @@ namespace MMS.IdentityManagement.Api.Test.Services
             {
                 Token = createTokenResult.AccessToken,
                 AuthenticationType = _createTokenRequest.AuthenticationType,
-                ValidAudiences = new[] { _createTokenRequest.Client.Id },
+                ValidAudiences = new[] { _createTokenRequest.Client.ClientId },
             };
 
             var tokenValidationResult = await _tokenService.ValidateTokenAsync(tokenValidationRequest).ConfigureAwait(false);

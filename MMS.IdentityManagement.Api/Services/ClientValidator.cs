@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MMS.IdentityManagement.Api.Data;
 using MMS.IdentityManagement.Api.Models;
 using MMS.IdentityManagement.Api.SecretProtectors;
+using MMS.IdentityManagement.Data;
 using MMS.IdentityManagement.Validation;
 
 namespace MMS.IdentityManagement.Api.Services
@@ -18,12 +18,12 @@ namespace MMS.IdentityManagement.Api.Services
     {
         private static readonly IErrorFactory<ClientValidationResult> ErrorFactory = ErrorFactory<ClientValidationResult>.Instance;
 
-        private readonly IClientRepository _repository;
+        private readonly IClientRepository _clientRepository;
         private readonly ISecretProtectorSelector _secretProtectorSelector;
 
-        public ClientValidator(IClientRepository repository, ISecretProtectorSelector secretProtectorSelector)
+        public ClientValidator(IClientRepository clientRepository, ISecretProtectorSelector secretProtectorSelector)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _clientRepository = clientRepository ?? throw new ArgumentNullException(nameof(clientRepository));
             _secretProtectorSelector = secretProtectorSelector ?? throw new ArgumentNullException(nameof(secretProtectorSelector));
         }
 
@@ -32,7 +32,7 @@ namespace MMS.IdentityManagement.Api.Services
             if (string.IsNullOrEmpty(request?.ClientId))
                 return ErrorFactory.InvalidRequest("Missing client_id");
 
-            var client = await _repository.GetClientByIdAsync(request.ClientId, cancellationToken).ConfigureAwait(false);
+            var client = await _clientRepository.GetClientByIdAsync(request.ClientId, cancellationToken).ConfigureAwait(false);
             if (client == null)
                 return ErrorFactory.InvalidClient("Unknown client_id");
 

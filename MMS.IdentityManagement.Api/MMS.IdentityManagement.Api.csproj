@@ -19,6 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\MMS.IdentityManagement.Data.EntityFramework\MMS.IdentityManagement.Data.EntityFramework.csproj" />
+        <ProjectReference Include="..\MMS.IdentityManagement.Data\MMS.IdentityManagement.Data.csproj" />
         <ProjectReference Include="..\MMS.IdentityManagement\MMS.IdentityManagement.csproj" />
     </ItemGroup>
 

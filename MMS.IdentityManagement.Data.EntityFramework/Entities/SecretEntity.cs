@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
-namespace MMS.IdentityManagement
+namespace MMS.IdentityManagement.Data.EntityFramework.Entities
 {
-    public class Secret
+    public class SecretEntity<TTag>
+        where TTag : TagEntity
     {
+        public int Id { get; set; }
+
         public string SecretId { get; set; }
 
         public string CipherType { get; set; }
 
-        [JsonIgnore]
         public string CipherText { get; set; }
 
         public DateTimeOffset CreatedWhen { get; set; }
 
         public DateTimeOffset UpdatedWhen { get; set; }
 
-        public IDictionary<string, string> Tags { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public List<TTag> Tags { get; set; }
     }
 }
