@@ -129,13 +129,13 @@ namespace MMS.IdentityManagement.Api.Services
             };
 
             var securityToken = _securityTokenHandler.CreateToken(tokenDescriptor);
-            var token = _securityTokenHandler.WriteToken(securityToken);
+            var jwtToken = _securityTokenHandler.WriteToken(securityToken);
 
             var result = new CreateTokenResult
             {
                 Identity = identity,
                 CreatedWhen = createdWhen,
-                AccessToken = token,
+                AccessToken = jwtToken,
                 AccessTokenExpiresWhen = accessTokenExpiresWhen,
                 RefreshToken = null, // TODO
                 RefreshTokenExpiresWhen = refreshTokenExpiresWhen,
@@ -153,7 +153,7 @@ namespace MMS.IdentityManagement.Api.Services
                 ValidateActor = false,
                 ValidateAudience = true,
                 ValidateIssuer = true,
-                ValidateIssuerSigningKey = false,
+                ValidateIssuerSigningKey = true,
                 ValidateLifetime = true,
                 ValidateTokenReplay = false,
 
@@ -172,17 +172,15 @@ namespace MMS.IdentityManagement.Api.Services
             {
                 result.Principal = _securityTokenHandler.ValidateToken(request.Token, validationParameters, out _);
             }
-            catch (SecurityTokenExpiredException exception)
+            catch (SecurityTokenExpiredException)
             {
                 result.Error = ErrorCodes.ExpiredToken;
                 result.ErrorDescription = "Lifetime validation failed.";
-                result.Exception = exception;
             }
             catch (Exception exception)
             {
                 result.Error = ErrorCodes.InvalidGrant;
                 result.ErrorDescription = exception.Message;
-                result.Exception = exception;
             }
 
             return Task.FromResult(result);

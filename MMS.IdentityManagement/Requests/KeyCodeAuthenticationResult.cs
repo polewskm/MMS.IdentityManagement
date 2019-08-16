@@ -15,8 +15,8 @@ namespace MMS.IdentityManagement.Requests
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }
 
-        [JsonProperty("expires_in", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
-        private long? AccessTokenExpiresIn
+        [JsonProperty("expires_in", NullValueHandling = NullValueHandling.Ignore)]
+        protected long? AccessTokenExpiresIn
         {
             get => AccessTokenExpiresWhen?.ToUnixTimeSeconds();
             set => AccessTokenExpiresWhen = value.HasValue ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeSeconds(value.Value) : null;
@@ -25,7 +25,7 @@ namespace MMS.IdentityManagement.Requests
         [JsonIgnore]
         public DateTimeOffset? AccessTokenExpiresWhen { get; set; }
 
-        [JsonProperty("refresh_token", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("refresh_token", NullValueHandling = NullValueHandling.Ignore)]
         public string RefreshToken { get; set; }
     }
 }

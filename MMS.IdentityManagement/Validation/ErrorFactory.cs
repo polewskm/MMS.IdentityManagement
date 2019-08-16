@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MMS.IdentityManagement.Validation
 {
@@ -7,11 +9,11 @@ namespace MMS.IdentityManagement.Validation
     {
         T Clone(CommonResult other);
 
-        T Error(string error, string description, Exception exception);
+        T Error(string error, string description, IEnumerable<KeyValuePair<string, object>> extensions);
 
         T Error(string error, string description);
 
-        T Error(string error, Exception exception);
+        T Error(string error);
     }
 
     public class ErrorFactory<T> : IErrorFactory<T>
@@ -27,16 +29,16 @@ namespace MMS.IdentityManagement.Validation
             if (other.Success)
                 throw new InvalidOperationException();
 
-            return Error(other.Error, other.ErrorDescription, other.Exception);
+            return Error(other.Error, other.ErrorDescription, other.Extensions);
         }
 
-        public virtual T Error(string error, string description, Exception exception)
+        public virtual T Error(string error, string description, IEnumerable<KeyValuePair<string, object>> extensions)
         {
             return new T
             {
                 Error = error,
                 ErrorDescription = description,
-                Exception = exception,
+                Extensions = extensions.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
             };
         }
 
@@ -49,12 +51,11 @@ namespace MMS.IdentityManagement.Validation
             };
         }
 
-        public virtual T Error(string error, Exception exception)
+        public virtual T Error(string error)
         {
             return new T
             {
                 Error = error,
-                Exception = exception,
             };
         }
 

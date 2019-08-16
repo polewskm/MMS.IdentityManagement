@@ -1,34 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace MMS.IdentityManagement.Validation
 {
     public class CommonResult
     {
-        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
-        private string _error;
-
-        [JsonProperty("error_description", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
-        private string _errorDescription;
-
         [JsonIgnore]
         public bool Success => string.IsNullOrEmpty(Error);
 
-        [JsonIgnore]
-        public string Error
-        {
-            get => _error ?? Exception?.Message;
-            set => _error = value;
-        }
+        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
+        public string Error { get; set; }
 
-        [JsonIgnore]
-        public string ErrorDescription
-        {
-            get => _errorDescription ?? Exception?.ToString();
-            set => _errorDescription = value;
-        }
+        [JsonProperty("error_description", NullValueHandling = NullValueHandling.Ignore)]
+        public string ErrorDescription { get; set; }
 
-        [JsonIgnore]
-        public Exception Exception { get; set; }
+        [JsonExtensionData]
+        public IDictionary<string, object> Extensions { get; set; } = new Dictionary<string, object>(StringComparer.Ordinal);
     }
 }

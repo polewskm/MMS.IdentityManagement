@@ -243,7 +243,6 @@ namespace MMS.IdentityManagement.Api.Test.Services
             Assert.False(tokenValidationResult.Success);
 
             Assert.Null(tokenValidationResult.Principal);
-            Assert.NotNull(tokenValidationResult.Exception);
             Assert.Equal(ErrorCodes.InvalidGrant, tokenValidationResult.Error);
             Assert.StartsWith("IDX12741", tokenValidationResult.ErrorDescription);
         }
@@ -270,7 +269,6 @@ namespace MMS.IdentityManagement.Api.Test.Services
             Assert.False(tokenValidationResult.Success);
 
             Assert.Null(tokenValidationResult.Principal);
-            Assert.NotNull(tokenValidationResult.Exception);
             Assert.Equal(ErrorCodes.ExpiredToken, tokenValidationResult.Error);
             Assert.Equal("Lifetime validation failed.", tokenValidationResult.ErrorDescription);
         }
@@ -292,7 +290,6 @@ namespace MMS.IdentityManagement.Api.Test.Services
             Assert.False(tokenValidationResult.Success);
 
             Assert.Null(tokenValidationResult.Principal);
-            Assert.NotNull(tokenValidationResult.Exception);
             Assert.Equal(ErrorCodes.InvalidGrant, tokenValidationResult.Error);
             Assert.StartsWith("IDX10214: Audience validation failed.", tokenValidationResult.ErrorDescription);
         }
